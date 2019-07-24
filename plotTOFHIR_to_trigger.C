@@ -162,6 +162,7 @@ int main(int argc, char** argv)
     
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
+    std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTime;
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
@@ -182,6 +183,8 @@ int main(int argc, char** argv)
             for (int iCh = 0; iCh < NCH; iCh++)
             {            
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+
+		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("hTot_cut_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
                 
                 hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("hTime_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
 
@@ -226,9 +229,16 @@ int main(int argc, char** argv)
             
 //             if (chtot[iCh]>0) std::cout << "filling ch[" << iCh << "] with tot = " << chtot[iCh]/1.e3 << " ns :: and time-t_ref = " << chTime[iCh] << "  - " << time_ref << " = " << chTime[iCh]-time_ref << std::endl;
             hTot[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+	    if (x_dut < 9 && x_dut > 7 ) // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar)
+	      {
+		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+	      }
             hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
-	    pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]);
-	    pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]);
+	    //	    if (chtot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
+	      {
+		pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]/1.e3);
+		pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]/1.e3);
+	      }
         }
         
         for (int iBar = 0; iBar<NBARS; iBar++)
@@ -273,14 +283,14 @@ int main(int argc, char** argv)
                 gPad->SetLogy();
 		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d.pdf", iCh));
 
-
+		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
 		// making plots for the x position of the device under test (x_dut)
 		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
                 cXpos_scan[iStep1][iStep2][iCh]->cd();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
-                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
+                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit("gaus");
 		//float mean = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetMean();
 		//float rms  = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetRMS();
@@ -295,7 +305,7 @@ int main(int argc, char** argv)
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Y position");
-                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
                 cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d.pdf", iCh));
             }
             

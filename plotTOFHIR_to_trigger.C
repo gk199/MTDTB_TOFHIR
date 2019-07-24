@@ -65,7 +65,8 @@ int main(int argc, char** argv)
         lastRun= atoi(argv[2]);
     }
     
-    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
+    //    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
+    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/v1/RecoWithTracks";
     if (argc > 3) 
     {
         data_path= std::string(argv[2]);
@@ -136,9 +137,7 @@ int main(int argc, char** argv)
     for (int iStep2 = 0; iStep2<NSTEP2; iStep2++)
     {
         std::cout << "step2 (" << iStep2+1 << "/" << NSTEP2 << "): " << step2_vct.at(iStep2)  << std::endl;        
-    }
-    
-    
+    }    
 
 
     // define histos    
@@ -148,16 +147,24 @@ int main(int argc, char** argv)
     double minTime = -200000;
     double maxTime = 200000;
     
+    double minXpos = -5;
+    double maxXpos = 40;
+
+    double minYpos = -5;
+    double maxYpos = 40;
+
     int REBIN_COEFF = 32;
     
     int NCH = 400;
-    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143};
+    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // these are from the board mapping on the google sheet tab
     int NBARS = 8;
     
     
-    
+    // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTime;
+    std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
+    std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
     
     std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
     
@@ -177,6 +184,10 @@ int main(int argc, char** argv)
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
                 
                 hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("hTime_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
+
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
             }
             for (int iBar = 0; iBar < NBARS; iBar++)
             {
@@ -207,14 +218,17 @@ int main(int argc, char** argv)
 //         if (step1!=0) continue;
 //         hCTR[step1][step2]->Fill(time2-time1);
         long long time_ref = chTime[384];
-        
+	
+	// channel loop in the event loop
         for (int iCh = 0; iCh<NCH; iCh++)
         {
             if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
             
 //             if (chtot[iCh]>0) std::cout << "filling ch[" << iCh << "] with tot = " << chtot[iCh]/1.e3 << " ns :: and time-t_ref = " << chTime[iCh] << "  - " << time_ref << " = " << chTime[iCh]-time_ref << std::endl;
             hTot[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-            hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);                        
+            hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
+	    pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]);
+	    pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]);
         }
         
         for (int iBar = 0; iBar<NBARS; iBar++)
@@ -237,6 +251,9 @@ int main(int argc, char** argv)
     float minTotForPeakSearch = 40;
     
     TCanvas *cTots_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cYpos_scan[NSTEP1][NSTEP2][NCH];
+
     for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
     {
         for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
@@ -254,6 +271,32 @@ int main(int argc, char** argv)
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("tot [ns]");
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
                 gPad->SetLogy();
+		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d.pdf", iCh));
+
+
+		// making plots for the x position of the device under test (x_dut)
+		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+                cXpos_scan[iStep1][iStep2][iCh]->cd();
+                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
+                pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit("gaus");
+		//float mean = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetMean();
+		//float rms  = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetRMS();
+		//TF1 * fitGaus = new TF1 ("fitGaus", "gaus", mean-rms , mean+rms);
+		//pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
+		//std::cout << "Xpos ch [" << iCh << "] = " << fitGaus->GetParameter(2) << " ps --> sigma_bar = " << fitGaus->GetParameter(2)/2 << " ps " << std::endl;
+                cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d.pdf", iCh));
+
+                // making plots for the y position of the device under test (y_dut)
+                cYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cYpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cYpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+                cYpos_scan[iStep1][iStep2][iCh]->cd();
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Y position");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
+                cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d.pdf", iCh));
             }
             
             /*
@@ -296,6 +339,10 @@ int main(int argc, char** argv)
         hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
         hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("tot [ns]");
         hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetYaxis()->SetTitle("Counts");
+	if ( myChList[chId] == 143 )
+	  {
+	    cArrayTots->SaveAs(Form("hTot_array_chId%.3d.pdf", myChList[chId]));
+	  }
     }
     
     
@@ -307,6 +354,10 @@ int main(int argc, char** argv)
         hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
         hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("Time [ps]");
         hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetYaxis()->SetTitle("Counts");
+	if ( myChList[chId] == 143 )
+	  {
+	    cArrayTimes->SaveAs(Form("hTime_array_chId%.3d.pdf", myChList[chId]));
+	  }
     }
     
     
@@ -326,10 +377,13 @@ int main(int argc, char** argv)
         
         TF1 * fitGaus = new TF1 ("fitGaus", "gaus", mean-rms , mean+rms);
         hCTR_UD[step1_vct.at(selStep1)][step2_vct.at(selStep2)][barId]->Fit(fitGaus, "QRL");
-        
+	if (barId == NBARS - 1)
+	  {
+	    cArrayCTR_UD->SaveAs(Form("hCTR_UD_array_barId%.3d.pdf", barId));
+	  }
+
         std::cout << "CTR_UD [" << barId << "] = " << fitGaus->GetParameter(2) << " ps --> sigma_bar = " << fitGaus->GetParameter(2)/2 << " ps " << std::endl;
     }
-    
     
     
     /*    
@@ -340,7 +394,6 @@ int main(int argc, char** argv)
     outputFile->Write();
     outputFile->Close();    
     */
-    
     
     std::cout << "end of program" << std::endl;
     theApp->Run();

@@ -158,8 +158,25 @@ int main(int argc, char** argv)
     int NCH = 400;
     int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // these are from the board mapping on the google sheet tab
     int NBARS = 8;
-    
-    
+
+    double center[NCH];
+    center[128] = 3;
+    center[129] = 4.5;
+    center[130] = 0;
+    center[131] = 8;
+    center[132] = 11;
+    center[133] = 12;
+    center[134] = 14;
+    center[135] = 15;
+    center[136] = 17;
+    center[137] = 18;
+    center[138] = 20;
+    center[139] = 21;
+    center[140] = 22;
+    center[141] = 24;
+    center[142] = 26;
+    center[143] = 26;
+
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut;
@@ -287,16 +304,22 @@ int main(int argc, char** argv)
 		// making plots for the x position of the device under test (x_dut)
 		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
                 cXpos_scan[iStep1][iStep2][iCh]->cd();
+
+
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
-		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit("gaus");
+		TF1 * fitGaus = new TF1 ("fitGaus", "gaus", center[iCh]-5 , center[iCh]+5 ); 
+
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
+
 		//float mean = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetMean();
 		//float rms  = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetRMS();
 		//TF1 * fitGaus = new TF1 ("fitGaus", "gaus", mean-rms , mean+rms);
 		//pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
 		//std::cout << "Xpos ch [" << iCh << "] = " << fitGaus->GetParameter(2) << " ps --> sigma_bar = " << fitGaus->GetParameter(2)/2 << " ps " << std::endl;
+		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
                 cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d.pdf", iCh));
 
                 // making plots for the y position of the device under test (y_dut)

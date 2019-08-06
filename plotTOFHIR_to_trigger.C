@@ -151,7 +151,8 @@ int main(int argc, char** argv)
     int REBIN_COEFF = 32;
     
     int NCH = 400;
-    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // these are from the board mapping on the google sheet tab
+    //    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // these are from the board mapping on the google sheet tab
+    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142};
     int NBARS = 8;
 
     double center[NCH];
@@ -191,7 +192,8 @@ int main(int argc, char** argv)
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
     std::map<float, std::map<float, std::map<int, TH2F * > > > pXpos_Ypos_Tot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
-
+    std::map<float, std::map<float, TProfile * > > pTot_vs_Xpos_overlay;
+    
 //     std::map<float, std::map<float, TProfile2D * > > hTot_XY[NCH];
 //     std::map<float, std::map<float, float > > tot_mean;    
 //     std::map<float, std::map<float, float > > time_mean;
@@ -217,6 +219,8 @@ int main(int argc, char** argv)
 
             }
 
+	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("ToT vs X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+
 	    // bar loop (outside of channel loop) to define time resolution for a single bar
             for (int iBar = 0; iBar < NBARS; iBar++)
             {
@@ -224,7 +228,7 @@ int main(int argc, char** argv)
             }                       
         }
     }
-    
+
     
     //define more histos...               
 
@@ -268,6 +272,8 @@ int main(int argc, char** argv)
 	      {
 		pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]/1.e3);
 		pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]/1.e3);
+		// fill the overlay plot with the x position from each channel         
+		pTot_vs_Xpos_overlay[step1][step2]->Fill(x_dut, chtot[iCh]/1.e3);
 	      }
         }
         
@@ -292,6 +298,9 @@ int main(int argc, char** argv)
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cYpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXposYpos_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cXpos_over_scan;
+
+    cXpos_over_scan = new TCanvas (Form("cXpos_over"), Form("cXpos_over"), 800, 400);
 
     // now draw all the histograms, again have step 1, step 2, channel loop
     for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
@@ -328,13 +337,11 @@ int main(int argc, char** argv)
 		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
                 cXpos_scan[iStep1][iStep2][iCh]->cd();
 
-
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
 		TF1 * fitGaus = new TF1 ("fitGaus", "gaus", center[iCh]-5 , center[iCh]+5 ); 
-
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
 
 		//float mean = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetMean();
@@ -356,7 +363,17 @@ int main(int argc, char** argv)
 		//pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausY, "QRL");
 		//std::cout << "yPos ch[" << iCh << "] = " << fitGausY->GetParameter(1) << " y position centered " << std::endl;
                 cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d.pdf", iCh));
+
+		// plots for overlay of x position 
+		//cXpos_over_scan[iStep1][iStep2] = new TCanvas (Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+		cXpos_over_scan->cd();
+		//pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("X position");
+		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("tot [ns]");
+		//cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay.pdf"));
             }
+	    cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay.pdf"));
             
             /*
             hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->SetRange(hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->FindBin(minTotForPeakSearch) , hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->GetNbins());

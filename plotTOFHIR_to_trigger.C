@@ -155,6 +155,8 @@ int main(int argc, char** argv)
     int NBARS = 8;
 
     double center[NCH];
+    // centers for first array when both sides of the bars are read out
+    /*
     center[128] = 3;
     center[129] = 4.5;
     center[130] = 0;
@@ -171,6 +173,15 @@ int main(int argc, char** argv)
     center[141] = 24;
     center[142] = 26;
     center[143] = 26;
+    */
+    // centers for second array when only one side of the bar is read out    
+    center[128] = 5;           
+    center[132] = 12;                                                                         
+    center[134] = 15;                                                                                        
+    center[136] = 18;                                                                                                                    
+    center[138] = 21;                                                                        
+    center[140] = 23;                                                                                                         
+    center[142] = 27;                                                                          
 
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
@@ -248,7 +259,7 @@ int main(int argc, char** argv)
 	    hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
-	    if (x_dut < 25.85+1 && x_dut > 25.85-1 )
+	    if (x_dut < 14.21+1 && x_dut > 14.21-1 )
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 	      }

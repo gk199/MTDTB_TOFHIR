@@ -63,10 +63,10 @@ int main(int argc, char** argv)
     }
     
     //    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
-    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/v1/RecoWithTracks";
+    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
     if (argc > 3) 
     {
-        data_path= std::string(argv[2]);
+      data_path = std::string(argv[3]);
     }
     std::cout << "data_path = " << data_path << std::endl;
     
@@ -85,7 +85,8 @@ int main(int argc, char** argv)
     for (int iRun = firstRun; iRun <= lastRun; iRun++)
     {
 //        if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
-       tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) );
+       tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
+       //       tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) ); 
        std::cout << "adding run: " << iRun << std::endl;
     }
     
@@ -113,6 +114,7 @@ int main(int argc, char** argv)
     {
         tree->GetEntry(iEvt);
 //         std::cout << "step1 = " << step1 << " :: step2 = " << step2 <<std::endl;
+	if (ntracks != 1) continue;
         if (std::find(step1_vct.begin(), step1_vct.end(), step1) == step1_vct.end() )
         {             
             step1_vct.push_back(step1);
@@ -151,15 +153,16 @@ int main(int argc, char** argv)
     int REBIN_COEFF = 32;
     
     int NCH = 400;
-    //    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // these are from the board mapping on the google sheet tab
-    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142};
+    // these are from the board mapping on the google sheet tab 
+    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // this is for the first array
+    //int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142}; // this is for the second array
     int NBARS = 8;
 
     double center[NCH];
     // centers for first array when both sides of the bars are read out
-    /*
-    center[128] = 3;
-    center[129] = 4.5;
+    //    /*
+    center[128] = 5.5;
+    center[129] = 5.5;
     center[130] = 0;
     center[131] = 8;
     center[132] = 11;
@@ -169,13 +172,14 @@ int main(int argc, char** argv)
     center[136] = 17;
     center[137] = 18;
     center[138] = 20;
-    center[139] = 21;
-    center[140] = 22;
-    center[141] = 24;
+    center[139] = 20;
+    center[140] = 24;
+    center[141] = 23;
     center[142] = 26;
     center[143] = 26;
-    */
+    //    */
     // centers for second array when only one side of the bar is read out    
+    /*
     center[128] = 5;           
     center[132] = 12;                                                                         
     center[134] = 15;                                                                                        
@@ -183,6 +187,7 @@ int main(int argc, char** argv)
     center[138] = 21;                                                                        
     center[140] = 23;                                                                                                         
     center[142] = 27;                                                                          
+    */
 
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
@@ -198,33 +203,37 @@ int main(int argc, char** argv)
 //     std::map<float, std::map<float, float > > tot_mean;    
 //     std::map<float, std::map<float, float > > time_mean;
         
-    // step 1, step 2, and channel listing loops. Histograms are defined inside the histograms
+    // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
     for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
     {
         for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
         {
             for (int iCh = 0; iCh < NCH; iCh++)
-            {            
-                hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Time over threshold, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+            {       
+	      std::cout << "in histogram loop " << std::endl;
+	      std::cout << Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)) << std::endl;
+	      std::cout << Form("step1_%i, step2_%i",iStep1, iStep2) << std::endl;
 
-		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Time over threshold with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+	      hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+
+	      hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
                 
-                hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Time Hist, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
+	      hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time Hist, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
 
-		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("ToT vs X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+	      pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
 
-                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("ToT vs Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
+	      pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
 
-       		pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
+	      pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
 
             }
 
-	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("ToT vs X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
 
 	    // bar loop (outside of channel loop) to define time resolution for a single bar
             for (int iBar = 0; iBar < NBARS; iBar++)
             {
-                hCTR_UD[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iBar] = new TH1F (Form("hCTR_UD_ch%.3d_step1_%.1f_step2_%.1f", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Bar Time Res, UD_ch%.3d, step1_%.1f, step2_%.1f", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, -1000, 1000 );
+	      hCTR_UD[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iBar] = new TH1F (Form("hCTR_UD_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Bar Time Res, UD_ch%.3d, step1_%.1f, step2_%.1f", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, -1000, 1000 );
             }                       
         }
     }
@@ -263,7 +272,7 @@ int main(int argc, char** argv)
 	    hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
-	    if (x_dut < 14.21+1 && x_dut > 14.21-1 )
+	    if (x_dut < 4.59+1 && x_dut > 4.59-1 )
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 	      }
@@ -272,7 +281,10 @@ int main(int argc, char** argv)
 	      {
 		pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]/1.e3);
 		pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]/1.e3);
-		// fill the overlay plot with the x position from each channel         
+		// fill the overlay plot with the x position from each channel   
+	        // pTot_vs_Xpos_overlay[step1][step2]->GetYaxis()->SetRange(-5,60);
+		pTot_vs_Xpos_overlay[step1][step2]->SetMaximum(60);
+		pTot_vs_Xpos_overlay[step1][step2]->SetMinimum(-5);
 		pTot_vs_Xpos_overlay[step1][step2]->Fill(x_dut, chtot[iCh]/1.e3);
 	      }
         }
@@ -341,7 +353,7 @@ int main(int argc, char** argv)
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
-		TF1 * fitGaus = new TF1 ("fitGaus", "gaus", center[iCh]-5 , center[iCh]+5 ); 
+		TF1 * fitGaus = new TF1 ("fitGaus", "gaus", center[iCh]-2.5 , center[iCh]+2.5 ); 
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
 
 		//float mean = pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetMean();

@@ -210,9 +210,9 @@ int main(int argc, char** argv)
         {
             for (int iCh = 0; iCh < NCH; iCh++)
             {       
-	      std::cout << "in histogram loop " << std::endl;
-	      std::cout << Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)) << std::endl;
-	      std::cout << Form("step1_%i, step2_%i",iStep1, iStep2) << std::endl;
+	      //std::cout << "in histogram loop " << std::endl;
+	      //std::cout << Form("hTot_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)) << std::endl;
+	      //std::cout << Form("step1_%i, step2_%i",iStep1, iStep2) << std::endl;
 
 	      hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
 
@@ -254,7 +254,8 @@ int main(int argc, char** argv)
     for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
     {
         tree->GetEntry(iEvt);
-        
+	if (ntracks != 1) continue; // require 1 MIP per event
+
         if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
 //         if (step1!=0) continue;
 //         hCTR[step1][step2]->Fill(time2-time1);
@@ -267,9 +268,15 @@ int main(int argc, char** argv)
             
 //             if (chtot[iCh]>0) std::cout << "filling ch[" << iCh << "] with tot = " << chtot[iCh]/1.e3 << " ns :: and time-t_ref = " << chTime[iCh] << "  - " << time_ref << " = " << chTime[iCh]-time_ref << std::endl;
             
+	    //std::cout << Form("filling histograms for Ch_%i, step1_%f, step2_%f",iCh, step1, step2) << std::endl;
+	    //	    std::cout << Form("channel time over threshold_%f",chtot[iCh]) << std::endl;
+
 	    hTot[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+	    //	    std::cout << "htot" << std::endl;
 	    pXpos_Ypos_Tot[step1][step2][iCh]->Fill(x_dut, y_dut);
+	    //	    std::cout << "ypos"<< std::endl;
 	    hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
+	    //	    std::cout << "time"<< std::endl;
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
 	    if (x_dut < 4.59+1 && x_dut > 4.59-1 )
@@ -311,6 +318,7 @@ int main(int argc, char** argv)
     TCanvas *cYpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXposYpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_over_scan;
+    //    TCanvas *cXpos_over_scan[NSTEP1][NSTEP2];
 
     cXpos_over_scan = new TCanvas (Form("cXpos_over"), Form("cXpos_over"), 800, 400);
 
@@ -323,7 +331,7 @@ int main(int argc, char** argv)
             {
                 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
                 
-                cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cTots_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+                cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
 //                 cTots_scan[iStep1][iStep2][iCh]->Divide(2,1);
                 
                 cTots_scan[iStep1][iStep2][iCh]->cd();            
@@ -334,7 +342,7 @@ int main(int argc, char** argv)
                 gPad->SetLogy();
 		// hTot_cut is for selecting the position of one bar and plotting the Landau peak
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d.pdf", iCh));
+		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		/*// plotting beam profile
 		cXposYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
@@ -346,7 +354,7 @@ int main(int argc, char** argv)
 		*/
 
 		// making plots for the x position of the device under test (x_dut)
-		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cXpos_scan[iStep1][iStep2][iCh]->cd();
 
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
@@ -362,10 +370,10 @@ int main(int argc, char** argv)
 		//pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
 		//std::cout << "Xpos ch [" << iCh << "] = " << fitGaus->GetParameter(2) << " ps --> sigma_bar = " << fitGaus->GetParameter(2)/2 << " ps " << std::endl;
 		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
-                cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d.pdf", iCh));
+                cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
                 // making plots for the y position of the device under test (y_dut)
-                cYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cYpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cYpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+                cYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cYpos_scan[iStep1][iStep2][iCh]->cd();
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
@@ -374,10 +382,10 @@ int main(int argc, char** argv)
 		//TF1 * fitGausY = new TF1 ("fitGausY", "gaus", -100 , 150 );
 		//pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausY, "QRL");
 		//std::cout << "yPos ch[" << iCh << "] = " << fitGausY->GetParameter(1) << " y position centered " << std::endl;
-                cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d.pdf", iCh));
+                cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		// plots for overlay of x position 
-		//cXpos_over_scan[iStep1][iStep2] = new TCanvas (Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);
+		//cXpos_over_scan[iStep1][iStep2] = new TCanvas (Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
 		cXpos_over_scan->cd();
 		//pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
@@ -387,7 +395,7 @@ int main(int argc, char** argv)
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("tot [ns]");
 		//cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay.pdf"));
             }
-	    cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay.pdf"));
+            cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
             
             /*
             hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->SetRange(hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->FindBin(minTotForPeakSearch) , hTot1[step1_vct.at(iStep1)][step2_vct.at(iStep2)]->GetXaxis()->GetNbins());

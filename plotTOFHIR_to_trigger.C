@@ -45,7 +45,7 @@
 int main(int argc, char** argv)
 {
     TApplication* theApp = new TApplication("App", &argc, argv);
-    TLegend *leg;
+    //TLegend *leg;
 
     //read input files
     int firstRun = 1;    
@@ -159,21 +159,23 @@ int main(int argc, char** argv)
     int NBARS = 8;
 
     double center[NCH];
+
+    double MIP_peak = 130;
     // centers for first array when both sides of the bars are read out
     //    /*
-    center[128] = 5.5;
-    center[129] = 5.5;
+    center[128] = 5;
+    center[129] = 5;
     center[130] = 0;
     center[131] = 8;
     center[132] = 11;
-    center[133] = 12;
+    center[133] = 11;
     center[134] = 14;
-    center[135] = 15;
+    center[135] = 14;
     center[136] = 17;
-    center[137] = 18;
+    center[137] = 17;
     center[138] = 20;
     center[139] = 20;
-    center[140] = 24;
+    center[140] = 23;
     center[141] = 23;
     center[142] = 26;
     center[143] = 26;
@@ -195,6 +197,7 @@ int main(int argc, char** argv)
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTime;
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
+    std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Xpos; 
     std::map<float, std::map<float, std::map<int, TH2F * > > > pXpos_Ypos_Tot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
     std::map<float, std::map<float, TProfile * > > pTot_vs_Xpos_overlay;
@@ -223,6 +226,8 @@ int main(int argc, char** argv)
 	      pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
 
 	      pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
+
+	      pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency  vs X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, 0, maxXpos);
 
 	      pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
 
@@ -265,7 +270,9 @@ int main(int argc, char** argv)
         for (int iCh = 0; iCh<NCH; iCh++)
         {
             if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
-            
+	    if (step1 != 4) continue;
+	    if (step2 != 20) continue;
+
 //             if (chtot[iCh]>0) std::cout << "filling ch[" << iCh << "] with tot = " << chtot[iCh]/1.e3 << " ns :: and time-t_ref = " << chTime[iCh] << "  - " << time_ref << " = " << chTime[iCh]-time_ref << std::endl;
             
 	    //std::cout << Form("filling histograms for Ch_%i, step1_%f, step2_%f",iCh, step1, step2) << std::endl;
@@ -279,7 +286,7 @@ int main(int argc, char** argv)
 	    //	    std::cout << "time"<< std::endl;
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
-	    if (x_dut < 4.59+1 && x_dut > 4.59-1 )
+	    if (x_dut < 4.53+1 && x_dut > 4.53-1 )
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 	      }
@@ -288,6 +295,15 @@ int main(int argc, char** argv)
 	      {
 		pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, chtot[iCh]/1.e3);
 		pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, chtot[iCh]/1.e3);
+		
+		// make efficiency plots - 1 if 0.9 - 3 * MIP energy, 0 otherwise
+		if ((chtot[iCh]/1.e3) >= 0.9 * MIP_peak && (chtot[iCh]/1.e3) <= 3 * MIP_peak && x_dut > 0)
+		  {
+		    //std::cout<< "energy = " << chtot[iCh]/1.e3 << std::endl;
+		    //std::cout<< "MIP peak value = " << MIP_peak << std::endl;
+		    pEff_vs_Xpos[step1][step2][iCh]->Fill(x_dut);
+		  }
+
 		// fill the overlay plot with the x position from each channel   
 	        // pTot_vs_Xpos_overlay[step1][step2]->GetYaxis()->SetRange(-5,60);
 		pTot_vs_Xpos_overlay[step1][step2]->SetMaximum(60);
@@ -311,12 +327,13 @@ int main(int argc, char** argv)
     }
     
     
-    float minTotForPeakSearch = 40;
+    //float minTotForPeakSearch = 40;
     
     TCanvas *cTots_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cYpos_scan[NSTEP1][NSTEP2][NCH];
-    TCanvas *cXposYpos_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cEff_scan[NSTEP1][NSTEP2][NCH];
+    //TCanvas *cXposYpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_over_scan;
     //    TCanvas *cXpos_over_scan[NSTEP1][NSTEP2];
 
@@ -330,6 +347,8 @@ int main(int argc, char** argv)
             for (int iCh = 0; iCh< NCH; iCh++)
             {
                 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+		if (step1_vct.at(iStep1) !=4) continue;
+		if (step2_vct.at(iStep2) !=20) continue;
                 
                 cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
 //                 cTots_scan[iStep1][iStep2][iCh]->Divide(2,1);
@@ -342,6 +361,8 @@ int main(int argc, char** argv)
                 gPad->SetLogy();
 		// hTot_cut is for selecting the position of one bar and plotting the Landau peak
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
+		TF1 * fitLandau = new TF1 ("fitLandau","[0]*TMath::Landau(x,[1],[2])",0,400);
+		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau, "QRL");
 		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		/*// plotting beam profile
@@ -383,6 +404,15 @@ int main(int argc, char** argv)
 		//pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausY, "QRL");
 		//std::cout << "yPos ch[" << iCh << "] = " << fitGausY->GetParameter(1) << " y position centered " << std::endl;
                 cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+
+		// efficiency plots
+		cEff_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cEff_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cEff__ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+		cEff_scan[iStep1][iStep2][iCh]->cd();
+		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
+		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Within MIP Peak Energy");
+		cEff_scan[iStep1][iStep2][iCh]->SaveAs(Form("pEff_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		// plots for overlay of x position 
 		//cXpos_over_scan[iStep1][iStep2] = new TCanvas (Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cXpos_over_step1_%.1f_step2_.%1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);

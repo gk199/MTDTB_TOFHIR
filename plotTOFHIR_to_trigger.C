@@ -283,10 +283,35 @@ int main(int argc, char** argv)
 	    //	    std::cout << "time"<< std::endl;
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
-	    if (x_dut < 14.21+1 && x_dut > 14.21-1 )
+	    // do this for each channel, based off of the stats found from the fit to the efficiency plots
+	    if (x_dut < 4.98+1 && x_dut > 4.98-1 && iCh == 128)
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 	      }
+            if (x_dut < 11.20+1 && x_dut > 11.20-1 && iCh == 132 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
+            if (x_dut < 14.73+1 && x_dut > 14.73-1 && iCh == 134 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
+            if (x_dut < 17.11+1 && x_dut > 17.11-1 && iCh == 136 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
+            if (x_dut < 20.11+1 && x_dut > 20.11-1 && iCh == 138 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
+            if (x_dut < 23.60+1 && x_dut > 23.60-1 && iCh == 140 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
+            if (x_dut < 26.46+1 && x_dut > 26.46-1 && iCh == 142 )
+              {
+                hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+              }
 
 	    //	    if (chtot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
 	      {
@@ -323,7 +348,6 @@ int main(int argc, char** argv)
         }
     }
     
-    
     TCanvas *cTots_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cEff_scan[NSTEP1][NSTEP2][NCH];
@@ -358,8 +382,9 @@ int main(int argc, char** argv)
 		// use the same binning for the plot before and after the cut on a single bar
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		TF1 * fitLandau = new TF1 ("fitLandau","[0]*TMath::Landau(x,[1],[2])",0,400);
+		TF1 * fitLandau = new TF1 ("fitLandau","landau",120,400);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau, "QRL");
+		std::cout << "Landau fit normalization coeff: " << fitLandau->GetParameter(0) << " most  probable value: " << fitLandau->GetParameter(1) << " Lambda value: " << fitLandau->GetParameter(2) << std::endl;
 		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		/*// plotting beam profile
@@ -387,15 +412,15 @@ int main(int argc, char** argv)
 		// efficiency plots
 		cEff_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cEff_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cEff__ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
 		cEff_scan[iStep1][iStep2][iCh]->cd();
-		//pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(2);
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Within MIP Peak Energy");
 		// need to find the center of the efficiency plot for one channel - use a specific fit function
-		TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
-		fitBarPos->SetParameters(5., 3., 0.01, 0.8, 0.2);
-		fitBarPos->SetNpx(5000);
-		cEff_scan[iStep1][iStep2][iCh]->SaveAs(Form("pEff_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		//TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
+		//fitBarPos->SetParameters(5., 3., 0.01, 0.8, 0.2);
+		//fitBarPos->SetNpx(5000);
+		//cEff_scan[iStep1][iStep2][iCh]->SaveAs(Form("pEff_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		// plots for overlay of x position 
 		cXpos_over_scan->cd();
@@ -476,7 +501,7 @@ int main(int argc, char** argv)
     for (int chId = 0; chId<NBARS*2; chId++)
       {
 	cArrayEff->cd(chId+1);
-	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(REBIN_COEFF);
+	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(2);
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("X position");
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("Efficiency within MIP Peak Energy");
@@ -485,6 +510,9 @@ int main(int argc, char** argv)
     TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
     fitBarPos->SetParameters(5., 3., 0.01, 0.8, 0.2);
     fitBarPos->SetNpx(5000);
+    fitBarPos->SetParLimits(0, minXpos, maxXpos);
+    fitBarPos->SetParLimits(1, 2, 4);
+    fitBarPos->SetParLimits(3, 0.2, 1.);
 
     TCanvas *cArrayEffOverlay = new TCanvas("cArrayEffOverlay","cArrayEffOverlay",1600,300);
     cArrayEffOverlay->cd();

@@ -208,6 +208,8 @@ int main(int argc, char** argv)
     MIP[140] = 169.818;
     MIP[142] = 152.33;
 
+    double avgMIP = (MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
+
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut;
@@ -248,7 +250,7 @@ int main(int argc, char** argv)
 
 		pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
 
-		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, -1, 10);
+		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
             }
 
 	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
@@ -284,9 +286,15 @@ int main(int argc, char** argv)
 	double TotalEnergy = 0;
 	for (int iCh = 0; iCh<NCH; iCh++)
 	  {
-	    TotalEnergy += (chtot[iCh]/1.e3) / MIP[iCh];
-	    //std::cout << "total energy: " << TotalEnergy << std::endl;
+	    // if not one of channels that we care about, skip it
+	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	    // want to find the total energy in the event, in any channel
+	    //std::cout << "energy " << chtot[iCh] << " for channel " << iCh << std::endl;
+	    if ( chtot[iCh] < -100 ) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999)
+	    double ICcoeff = MIP[iCh] / avgMIP;
+	    TotalEnergy += (chtot[iCh]/1.e3) / ICcoeff;
 	  }
+	//std::cout << "total energy: " << TotalEnergy << std::endl;
 	// channel loop in the event loop
 	for (int iCh = 0; iCh<NCH; iCh++)
 	  {
@@ -304,7 +312,12 @@ int main(int argc, char** argv)
 
 	    // calculate the cross talk, and plot this
 	    // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
-	    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / MIP[iCh]) );
+	    // if no energy recorded, TotalEnergy = 0, ignore this case for the cross talk calculation
+	    if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+	      {
+		double ICcoeff = MIP[iCh] /avgMIP;
+		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+	      }
 
 	    //      std::cout << "htot" << std::endl;
 	    //      std::cout << "ypos"<< std::endl;

@@ -167,6 +167,7 @@ int main(int argc, char** argv)
     int NBARS = 8;
     double center[NCH];
     double MIP[NCH];
+    double IC[NCH];
 
     double MIP_peak = 130;
     // centers for first array when both sides of the bars are read out
@@ -207,8 +208,17 @@ int main(int argc, char** argv)
     MIP[138] = 152.157;
     MIP[140] = 169.818;
     MIP[142] = 152.33;
-
+    
+    // calculate intercallibration coefficients
     double avgMIP = (MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
+    IC[128] = MIP[128] / avgMIP;
+    IC[132] = MIP[132] / avgMIP;
+    IC[134] = MIP[134] / avgMIP;
+    IC[136] = MIP[136] / avgMIP;
+    IC[138] = MIP[138] / avgMIP;
+    IC[140] = MIP[140] / avgMIP;
+    IC[142] = MIP[142] / avgMIP;
+    std::cout << "128: " << IC[128] << " 132: " << IC[132] << " 134: " << IC[134] << " 136: " << IC[136] << " 138: " << IC[138] << " 140: " << IC[140] << " 142: " << IC[142] << std::endl;
 
     // declare the histograms, these will be filled in the channel loop    
     std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
@@ -313,11 +323,14 @@ int main(int argc, char** argv)
 	    // calculate the cross talk, and plot this
 	    // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
 	    // if no energy recorded, TotalEnergy = 0, ignore this case for the cross talk calculation
+
+	    /*
 	    if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
 	      {
 		double ICcoeff = MIP[iCh] /avgMIP;
 		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 	      }
+	    */
 
 	    //      std::cout << "htot" << std::endl;
 	    //      std::cout << "ypos"<< std::endl;
@@ -328,30 +341,65 @@ int main(int argc, char** argv)
 	    if (x_dut < 4.98+1 && x_dut > 4.98-1 && iCh == 128)
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100) 
+		  {
+		    double ICcoeff = MIP[iCh] /avgMIP;
+		    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+		  }
 	      }
             if (x_dut < 11.20+1 && x_dut > 11.20-1 && iCh == 132 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
             if (x_dut < 14.73+1 && x_dut > 14.73-1 && iCh == 134 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
             if (x_dut < 17.11+1 && x_dut > 17.11-1 && iCh == 136 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
             if (x_dut < 20.11+1 && x_dut > 20.11-1 && iCh == 138 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
             if (x_dut < 23.60+1 && x_dut > 23.60-1 && iCh == 140 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
             if (x_dut < 26.46+1 && x_dut > 26.46-1 && iCh == 142 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
+		if (TotalEnergy > 0.00001 && chtot[iCh] > -100)
+                  {
+                    double ICcoeff = MIP[iCh] /avgMIP;
+                    pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+                  }
               }
 
 	    //	    if (chtot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
@@ -436,6 +484,7 @@ int main(int argc, char** argv)
 		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
 		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit");
 		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
+		gPad->SetLogy();
 		cCrossTalk[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		/*// plotting beam profile

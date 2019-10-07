@@ -151,7 +151,7 @@ int main(int argc, char** argv)
     double minTime = -200000;
     double maxTime = 200000;
     
-    double minXpos = -5;
+    double minXpos = 0;
     double maxXpos = 40;
 
     double minYpos = -10;
@@ -169,7 +169,6 @@ int main(int argc, char** argv)
     double MIP[NCH];
     double IC[NCH];
 
-    double MIP_peak = 130;
     // centers for first array when both sides of the bars are read out
     /*
     center[128] = 5;
@@ -191,23 +190,23 @@ int main(int argc, char** argv)
     */
     // centers for second array when only one side of the bar is read out    
     // /*
-    center[128] = 5;           
-    center[132] = 12;                                                                         
-    center[134] = 15;                                                                                        
-    center[136] = 18;                                                                                                                    
-    center[138] = 21;                                                                        
-    center[140] = 23;                                                                                                         
-    center[142] = 27;                                                                          
+    center[128] = 7;           
+    center[132] = 11.18;                                                                         
+    center[134] = 14.32;                                        
+    center[136] = 17.49;                                    
+    center[138] = 20.62;                              
+    center[140] = 23.95;                                             
+    center[142] = 26.79;                              
     // */
 
-    // list MIP peak energies based off of Landau fit
-    MIP[128] = 145.582;
-    MIP[132] = 140.693;
-    MIP[134] = 144.767;
-    MIP[136] = 140.229;
-    MIP[138] = 152.215;
-    MIP[140] = 169.254;
-    MIP[142] = 152.326;
+    // list MIP peak energies based off of Landau fit, this is for v2 recomstruction
+    MIP[128] = 144.671;
+    MIP[132] = 140.768;
+    MIP[134] = 144.723;
+    MIP[136] = 140.753;
+    MIP[138] = 151.963;
+    MIP[140] = 169.409;
+    MIP[142] = 151.997;
     
     // calculate intercallibration coefficients
     double avgMIP = (MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
@@ -264,7 +263,7 @@ int main(int argc, char** argv)
 
 		pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
 
-		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (event basis) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
+		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
 
 		pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
 
@@ -348,7 +347,7 @@ int main(int argc, char** argv)
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
 	    // do this for each channel, based off of the stats found from the fit to the efficiency plots
-	    if (x_dut < 4.98+1 && x_dut > 4.98-1 && iCh == 128)
+	    if (x_dut < center[128]+1 && x_dut > center[128]-1 && iCh == 128)
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5) 
@@ -357,7 +356,7 @@ int main(int argc, char** argv)
 		    pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 		  }
 	      }
-            if (x_dut < 11.20+1 && x_dut > 11.20-1 &&  iCh == 132 )
+            if (x_dut < center[132]+1 && x_dut > center[132]-1 &&  iCh == 132 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -366,7 +365,7 @@ int main(int argc, char** argv)
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
                   }
               }
-            if (x_dut < 14.73+1 && x_dut > 14.73-1 && iCh == 134 )
+            if (x_dut < center[134]+1 && x_dut > center[134]-1 && iCh == 134 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -375,7 +374,7 @@ int main(int argc, char** argv)
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
                   }
               }
-            if (x_dut < 17.11+1 && x_dut > 17.11-1 && iCh == 136 )
+            if (x_dut < center[136]+1 && x_dut > center[136]-1 && iCh == 136 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -384,7 +383,7 @@ int main(int argc, char** argv)
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
                   }
               }
-            if (x_dut < 20.11+1 && x_dut > 20.11-1  && iCh == 138 )
+            if (x_dut < center[138]+1 && x_dut > center[138]-1  && iCh == 138 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -394,7 +393,7 @@ int main(int argc, char** argv)
                   }
               }
 	    // fill the 1 bar away cross talk for ch 138
-	    if ( (x_dut < 23.60+1 && x_dut > 23.60-1) || (x_dut < 17.11+1 && x_dut > 17.11-1) )
+	    if ( (x_dut < center[140]+1 && x_dut > center[140]-1) || (x_dut < center[136]+1 && x_dut > center[136]-1) )
 	      {
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5 && iCh == 138)
 		  {
@@ -403,7 +402,7 @@ int main(int argc, char** argv)
 		  }
 	      }
 	    // fill the 2 bars away cross talk for ch 138
-	    if ( (x_dut < 14.73+1 && x_dut > 14.73-1 ) || (x_dut < 26.46+1 && x_dut > 26.46-1) )
+	    if ( (x_dut < center[142]+1 && x_dut > center[142]-1 ) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
 	      {
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5 && iCh == 138)
 		  {
@@ -411,7 +410,7 @@ int main(int argc, char** argv)
 		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / (MIP[138] / ICcoeff) ) / TotalEnergy );
 		  }
 	      }
-            if (x_dut < 23.60+1 && x_dut > 23.60-1  && iCh == 140 )
+            if (x_dut < center[140]+1 && x_dut > center[140]-1  && iCh == 140 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -420,7 +419,7 @@ int main(int argc, char** argv)
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
                   }
               }
-            if (x_dut < 26.46+1 && x_dut > 26.46-1 && iCh == 142 )
+            if (x_dut < center[142]+1 && x_dut > center[142]-1 && iCh == 142 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		if (TotalEnergy > 0.00001 && chtot[iCh] > 5)
@@ -438,10 +437,10 @@ int main(int argc, char** argv)
 	    if (x_dut != 0 && y_dut != 0)
 	      {
 		pXY_Edep[step1][step2][iCh]->Fill(x_dut, y_dut, chtot[iCh]/1.e3);
-		if ((chtot[iCh]/1.e3) >= 0.9 * MIP_peak && (chtot[iCh]/1.e3) <= 3 * MIP_peak && x_dut > 0)
+		if ((chtot[iCh]/1.e3) >= 0.9 * MIP[iCh] && (chtot[iCh]/1.e3) <= 3 * MIP[iCh] && x_dut > 0)
 		  {
 		    //std::cout<< "energy = " << chtot[iCh]/1.e3 << std::endl;
-		    //std::cout<< "MIP peak value = " << MIP_peak << std::endl;
+		    //std::cout<< "MIP peak value = " << MIP[iCh] << std::endl;
 		    pEff_vs_Xpos[step1][step2][iCh]->Fill(x_dut, 1);
 		  }
 	      }
@@ -513,6 +512,7 @@ int main(int argc, char** argv)
 		std::cout << "Ch # " << iCh << " Landau fit normalization coeff: " << fitLandau->GetParameter(0) << " most  probable value: " << fitLandau->GetParameter(1) << " Lambda value: " << fitLandau->GetParameter(2) << std::endl;
 		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
+		/*
 		cCrossTalk[iStep1][iStep2][iCh] = new TCanvas (Form("cCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
 		cCrossTalk[iStep1][iStep2][iCh]->cd();
 		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
@@ -528,6 +528,7 @@ int main(int argc, char** argv)
 		pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
 		gPad->SetLogy();
 		cCrossTalkBar[iStep1][iStep2][iCh]->SaveAs(Form("crosstalkBar_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		*/
 
 		// overlaying the cross talk with the cut on a certain bar
 		cCrossTalkOverlay[iStep1][iStep2][iCh] = new TCanvas (Form("cCrossTalkOverlay_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalkOverlay_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
@@ -694,7 +695,7 @@ int main(int argc, char** argv)
 	  }
 	cArrayEff->cd(chId+1);
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(2);
-        pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,500,"Y");
+        pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,2,"Y");
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("X position");
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("Efficiency within MIP Peak Energy");

@@ -16,4 +16,12 @@ For the array with both sides read out, the range of run numbers is 15554 to 156
 
 For the second array (where only even channel numbers are read out), runs 15676-15710 have step 1 (overvoltage) = 6, and step 2 (threshold) = 0. Run 15692 is very well reconstructed and good to run over.
 
-For Run 15692, this is with vth1 = 0 and vth2 = 30 (these are the starting time and falling edge of how the ToT is determined), and therefore the correction function for this is applied. The fit used is pol3 with TF1 *fCorr = new TF1("fCorr","[0]*x + [1]*x*x + [2]*x*x*x", 0, 1000); and [plotted here](https://malberti.web.cern.ch/malberti/MTD/Lab5015/TOFHIR/NonLinearityToT/pol3/vth1_0_vth2_30/c_correction.pdf "Martina Malberti Tot non linearity"). This ToT linearization is applied for the Landau fit and the cross talk studies. 
+For Run 15692, this is with vth1 = 0 and vth2 = 30 (these are the starting time and falling edge of how the ToT is determined), and therefore the correction function for this is applied. The fit used is either:
+
+    pol3 with TF1 *fCorr = new TF1("fCorr","[0]*x + [1]*x*x + [2]*x*x*x", 0, 1000);
+
+    expo with TF1 *fCorr = new TF1("fCorr","[0] * ( exp([1]*x) - 1 )", 0, 1000);
+
+with [pol3 plotted here](https://malberti.web.cern.ch/malberti/MTD/Lab5015/TOFHIR/NonLinearityToT/pol3/vth1_0_vth2_30/c_correction.pdf "Martina Malberti Tot non linearity pol3") and [expo plotted here](https://malberti.web.cern.ch/malberti/MTD/Lab5015/TOFHIR/NonLinearityToT/vth1_0_vth2_30/c_correction.png "Martina Malberti Tot non linearity exponential"). This ToT linearization is applied for the Landau fit and the cross talk studies. 
+
+Cross talk: blue plot shows fractional energy in a bar when a MIP is deposited somewhere in the array, green shows when the MIP is in the central bar, red shows when MIP is in neighboring bar, and purple when the MIP is in a second to neighboring bar.

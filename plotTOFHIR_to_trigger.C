@@ -357,13 +357,15 @@ int main(int argc, char** argv)
 	    TotalEnergy += (chtot[iCh]/1.e3) / ICcoeff;
 
 	    // corrected energy given the correction to the tot linearization
-	    double corrected_tot = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
+	    //double corrected_tot = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
+	    double corrected_tot = 14.13 * (exp(0.01562 * chtot[iCh]/1.e3)-1);
 	    double ICcoeff_corr = MIP_corr[iCh] / avgMIP_corr;
 	    TotalEnergy_corr += corrected_tot / ICcoeff_corr;
 
 	  }
 	//std::cout << "total energy: " << TotalEnergy << std::endl;
 	// channel loop in the event loop
+	double corrected_tot[NCH];
 	for (int iCh = 0; iCh<NCH; iCh++)
 	  {
 	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
@@ -374,10 +376,11 @@ int main(int argc, char** argv)
 	    //std::cout << Form("filling histograms for Ch_%i, step1_%f, step2_%f",iCh, step1, step2) << std::endl;
 	    //std::cout << Form("channel time over threshold_%f",chtot[iCh]) << std::endl;
 
-	    double corrected_tot = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
+	    //corrected_tot[iCh] = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
+	    corrected_tot[iCh] = 14.13 * (exp(0.01562 * chtot[iCh]/1.e3)-1);
 
 	    hTot[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-	    hTot_correction[step1][step2][iCh]->Fill(corrected_tot);
+	    hTot_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
 	    pXpos_Ypos_Tot[step1][step2][iCh]->Fill(x_dut, y_dut);
 	    hTime[step1][step2][iCh]->Fill(chTime[iCh] - time_ref);
 
@@ -385,13 +388,13 @@ int main(int argc, char** argv)
 	    // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
 	    // if no energy recorded, TotalEnergy = 0, ignore this case for the cross talk calculation
 
-	    if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400) // tot>5 for a zero supression from low energy deposits
+	    if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
 	      {
 		double ICcoeff = MIP[iCh] /avgMIP;
 		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
 	      }
 
 	    //      std::cout << "htot" << std::endl;
@@ -400,145 +403,148 @@ int main(int argc, char** argv)
 
 	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
 	    // do this for each channel, based off of the stats found from the fit to the efficiency plots
+	    // for the cross talk (green plot) cut around the MIP position requring signal in the central bar to be 0.85*MIP - 4*MIP
+	    // MIP and x_dut cut should be redundant actually
 	    if (x_dut < center[128]+1 && x_dut > center[128]-1 && iCh == 128 )
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400) 
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh]) 
 		  {
 		    double ICcoeff = MIP[iCh] /avgMIP;
 		    pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
 		  }
 	      }
             if (x_dut < center[132]+1 && x_dut > center[132]-1 &&  iCh == 132 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
             if (x_dut < center[134]+1 && x_dut > center[134]-1 && iCh == 134 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
             if (x_dut < center[136]+1 && x_dut > center[136]-1 && iCh == 136 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
             if (x_dut < center[138]+1 && x_dut > center[138]-1  && iCh == 138 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
 	    // fill the 1 bar away cross talk for ch 138
 	    if ( (x_dut < center[140]+1 && x_dut > center[140]-1) || (x_dut < center[136]+1 && x_dut > center[136]-1) )
 	      {
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && iCh == 138 && chtot[iCh]/1.e3<400)
+		// put a MIP cut on the bar +-1 away from 138
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && ( iCh == 140 || iCh == 136))
 		  {
-		    double ICcoeff = MIP[iCh] /avgMIP;
+		    double ICcoeff = MIP[138] /avgMIP;
 		    pCrossTalkBar1away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
+                    pCrossTalkBar1away_corr[step1][step2][138]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
 		  }
 	      }
 	    // fill the 2 bars away cross talk for ch 138
 	    if ( (x_dut < center[142]+1 && x_dut > center[142]-1 ) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
 	      {
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && iCh == 138 && chtot[iCh]/1.e3<400)
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 142 || iCh == 134) )
 		  {
-		    double ICcoeff = MIP[iCh] /avgMIP;
+		    double ICcoeff = MIP[138] /avgMIP;
 		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
+                    pCrossTalkBar2away_corr[step1][step2][138]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
 		  }
 	      }
 
             // fill the 1 bar away cross talk for ch 136
             if ( (x_dut < center[138]+1 && x_dut > center[138]-1) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
               {
-                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && iCh == 136 && chtot[iCh]/1.e3<400)
+                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 138 || iCh == 134))
                   {
-                    double ICcoeff = MIP[iCh] /avgMIP;
+                    double ICcoeff = MIP[136] /avgMIP;
                     pCrossTalkBar1away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
+                    pCrossTalkBar1away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
             // fill the 2 bars away cross talk for ch 136                                                  
             if ( (x_dut < center[140]+1 && x_dut > center[140]-1 ) || (x_dut < center[132]+1 && x_dut > center[132]-1) )
               {
-                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && iCh == 136 && chtot[iCh]/1.e3<400)
+                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 140 || iCh == 132))
                   {
-                    double ICcoeff = MIP[iCh] /avgMIP;
+                    double ICcoeff = MIP[136] /avgMIP;
                     pCrossTalkBar2away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
+                    pCrossTalkBar2away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
 
             if (x_dut < center[140]+1 && x_dut > center[140]-1  && iCh == 140 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
             if (x_dut < center[142]+1 && x_dut > center[142]-1 && iCh == 142 )
               {
                 hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3<400)
+		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh])
                   {
                     double ICcoeff = MIP[iCh] /avgMIP;
                     pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot / ICcoeff_corr )  / TotalEnergy_corr );
+                    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
                   }
               }
 
@@ -615,7 +621,7 @@ int main(int argc, char** argv)
 
                 cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cTots_scan[iStep1][iStep2][iCh]->cd();            
-                hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+                hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("tot [ns]");
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
@@ -623,7 +629,7 @@ int main(int argc, char** argv)
 		// hTot_cut is for selecting the position of one bar and plotting the Landau peak
 		// use the same binning for the plot before and after the cut on a single bar
 		// different line color for the MIP peak after the bar cut (this is landau peak after choosing each bar)
-		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
 		// do the Landau fit, and set the range over which the fit is done (reduced from 120-400 to 130-250
@@ -635,7 +641,7 @@ int main(int argc, char** argv)
 
 		cTots_scan_correction[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cTots_scan_correction[iStep1][iStep2][iCh]->cd();
-                hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+                hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Corrected tot [ns]");
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
@@ -643,7 +649,7 @@ int main(int argc, char** argv)
                 // hTot_cut is for selecting the position of one bar and plotting the Landau peak
                 // use the same binning for the plot before and after the cut on a single bar                                                         
                 // different line color for the MIP peak after the bar cut (this is landau peak after choosing each bar)                                                   
-                hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+                hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
                 // do the Landau fit, and set the range over which the fit is done (reduced from 120-400 to 130-250                              

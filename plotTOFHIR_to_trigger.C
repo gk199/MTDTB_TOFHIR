@@ -65,6 +65,7 @@ int main(int argc, char** argv)
     
     //    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
     std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
+    //std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v4";  
     if (argc > 3) 
     {
       std::cout << "using data path from input line" << std::endl;
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
       {
 	//if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
 	tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
-	//tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) ); 
+	//tree->Add( Form("%s/outFile_%.5d.root", data_path.c_str(), iRun) );  
 	std::cout << "adding run: " << iRun << std::endl;
       }
 
@@ -353,15 +354,13 @@ int main(int argc, char** argv)
 	    //std::cout << "energy " << chtot[iCh] << " for channel " << iCh << std::endl;
 	    if ( chtot[iCh] < -100 ) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999)
 
-	    double ICcoeff = MIP[iCh] / avgMIP;
-	    TotalEnergy += (chtot[iCh]/1.e3) / ICcoeff;
-
 	    // corrected energy given the correction to the tot linearization
 	    //double corrected_tot = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
 	    double corrected_tot = 14.13 * (exp(0.01562 * chtot[iCh]/1.e3)-1);
 	    double ICcoeff_corr = MIP_corr[iCh] / avgMIP_corr;
+	    double ICcoeff = MIP[iCh] / avgMIP;
+	    TotalEnergy += (chtot[iCh]/1.e3) / ICcoeff;
 	    TotalEnergy_corr += corrected_tot / ICcoeff_corr;
-
 	  }
 	//std::cout << "total energy: " << TotalEnergy << std::endl;
 	// channel loop in the event loop
@@ -388,13 +387,19 @@ int main(int argc, char** argv)
 	    // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
 	    // if no energy recorded, TotalEnergy = 0, ignore this case for the cross talk calculation
 
-	    if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
+	    if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
 	      {
 		double ICcoeff = MIP[iCh] /avgMIP;
 		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
 
 		double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
                 pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
+
+		if (((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
+		  {
+		    std::cout<< "Large value for 2 bar away (purple) cross talk ch " << iCh << " with corrected tot = " << (corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[iCh]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
+		    std::cout<< "Energy total value corrected = " << TotalEnergy_corr << " uncorrected = " << TotalEnergy << " tot corr = " << corrected_tot[iCh] / ICcoeff_corr << " tot uncorrected = " << (chtot[iCh]/1.e3) / ICcoeff << std::endl;
+		  }
 	      }
 
 	    //      std::cout << "htot" << std::endl;
@@ -409,7 +414,7 @@ int main(int argc, char** argv)
 	      {
 		hTot_cut[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh]) 
+		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh]) 
 		  {
 		    double ICcoeff = MIP[iCh] /avgMIP;
 		    pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
@@ -423,7 +428,7 @@ int main(int argc, char** argv)
 	    if ( (x_dut < center[140]+1 && x_dut > center[140]-1) || (x_dut < center[136]+1 && x_dut > center[136]-1) )
 	      {
 		// put a MIP cut on the bar +-1 away from 138
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && ( iCh == 140 || iCh == 136))
+		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && ( iCh == 140 || iCh == 136))
 		  {
 		    double ICcoeff = MIP[138] /avgMIP;
 		    pCrossTalkBar1away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
@@ -435,20 +440,27 @@ int main(int argc, char** argv)
 	    // fill the 2 bars away cross talk for ch 138
 	    if ( (x_dut < center[142]+1 && x_dut > center[142]-1 ) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
 	      {
-		if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 142 || iCh == 134) )
+		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 142 || iCh == 134) )
 		  {
 		    double ICcoeff = MIP[138] /avgMIP;
 		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
                     pCrossTalkBar2away_corr[step1][step2][138]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+
+		    /*
+		    if (((corrected_tot[138]/ ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
+		      {
+			std::cout<< "Large value for 2 bar away (purple) cross talk ch 138 with corrected tot = " << (corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[138]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
+		      }
+		    */
 		  }
 	      }
 
             // fill the 1 bar away cross talk for ch 136
             if ( (x_dut < center[138]+1 && x_dut > center[138]-1) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
               {
-                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 138 || iCh == 134))
+                if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 138 || iCh == 134))
                   {
                     double ICcoeff = MIP[136] /avgMIP;
                     pCrossTalkBar1away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
@@ -460,13 +472,18 @@ int main(int argc, char** argv)
             // fill the 2 bars away cross talk for ch 136                                                  
             if ( (x_dut < center[140]+1 && x_dut > center[140]-1 ) || (x_dut < center[132]+1 && x_dut > center[132]-1) )
               {
-                if (TotalEnergy > 0.00001 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 140 || iCh == 132))
+                if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 140 || iCh == 132))
                   {
                     double ICcoeff = MIP[136] /avgMIP;
                     pCrossTalkBar2away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
                     pCrossTalkBar2away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+
+		    if ((corrected_tot[136]/ ICcoeff_corr )  / TotalEnergy_corr  >= 1 )
+                      {
+			std::cout<< "Large value for 2 bar away (purple) cross talk ch 138 with corrected tot = " << (corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[138]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
+		      } 
                   }
               }
 

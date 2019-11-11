@@ -64,8 +64,8 @@ int main(int argc, char** argv)
     }
     
     //    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
-    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
-    //std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v4";  
+    //std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
+    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v4";  
     if (argc > 3) 
     {
       std::cout << "using data path from input line" << std::endl;
@@ -89,8 +89,8 @@ int main(int argc, char** argv)
     for (int iRun = firstRun; iRun <= lastRun; iRun++)
       {
 	//if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
-	tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
-	//tree->Add( Form("%s/outFile_%.5d.root", data_path.c_str(), iRun) );  
+	//tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
+	tree->Add( Form("%s/outFile_%.5d.root", data_path.c_str(), iRun) );  
 	std::cout << "adding run: " << iRun << std::endl;
       }
 
@@ -395,11 +395,13 @@ int main(int argc, char** argv)
 		double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
                 pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
 
+		/*
 		if (((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
 		  {
-		    std::cout<< "Large value for 2 bar away (purple) cross talk ch " << iCh << " with corrected tot = " << (corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[iCh]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
+		    std::cout<< "Large value for cross talk (blue) in ch " << iCh << " with corrected tot = " << (corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[iCh]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
 		    std::cout<< "Energy total value corrected = " << TotalEnergy_corr << " uncorrected = " << TotalEnergy << " tot corr = " << corrected_tot[iCh] / ICcoeff_corr << " tot uncorrected = " << (chtot[iCh]/1.e3) / ICcoeff << std::endl;
 		  }
+		*/
 	      }
 
 	    //      std::cout << "htot" << std::endl;
@@ -480,10 +482,12 @@ int main(int argc, char** argv)
 		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
                     pCrossTalkBar2away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
 
+		    /*
 		    if ((corrected_tot[136]/ ICcoeff_corr )  / TotalEnergy_corr  >= 1 )
                       {
 			std::cout<< "Large value for 2 bar away (purple) cross talk ch 138 with corrected tot = " << (corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[138]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
-		      } 
+		      }
+		    */ 
                   }
               }
 
@@ -648,7 +652,14 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
-                    cCrossTalk138_corr[iStep1][iStep2][138]->SaveAs(Form("crosstalk138_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		    cCrossTalk138_corr[iStep1][iStep2][138]->SaveAs(Form("crosstalk138_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.9 );
+                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausGreen, "QRL");
+                    TF1 * fitGausRed = new TF1 ("fitGausRed", "gaus", 0.05, 0.3 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausRed, "QRL");
+                    TF1 * fitGausPurple = new TF1 ("fitGausPurple", "gaus", 0.0, 0.1 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausPurple, "QRL");
+		    std::cout << "fractional energy ch 138: " << fitGausGreen->GetParameter(1) << " fractional energy ch 138 1 away: " << fitGausRed->GetParameter(1) << " fractional energy ch 138 2 away: " << fitGausPurple->GetParameter(1) << std::endl;
 		  }
 
                 if (iCh == 136 )
@@ -679,7 +690,14 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
-                    cCrossTalk136_corr[iStep1][iStep2][136]->SaveAs(Form("crosstalk136_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		    cCrossTalk136_corr[iStep1][iStep2][136]->SaveAs(Form("crosstalk136_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.6, 0.9 );
+                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausGreen1, "QRL");
+                    TF1 * fitGausRed1 = new TF1 ("fitGausRed1", "gaus", 0.05, 0.3 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausRed1, "QRL");
+                    TF1 * fitGausPurple1 = new TF1 ("fitGausPurple1", "gaus", 0.0, 0.1 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausPurple1, "QRL");
+		    std::cout << "fractional energy ch 136: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 136 1 away: " << fitGausRed1->GetParameter(1) << " fractional energy ch 136 2 away: " << fitGausPurple1->GetParameter(1) << std::endl;
                   }
 
 		/*// plotting beam profile

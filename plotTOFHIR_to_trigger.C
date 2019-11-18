@@ -64,8 +64,8 @@ int main(int argc, char** argv)
     }
     
     //    std::string data_path = "../data/RecoData/v1/RecoWithTracks";
-    //std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
-    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v4";  
+    std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2";
+    //std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v4";  
     if (argc > 3) 
     {
       std::cout << "using data path from input line" << std::endl;
@@ -89,8 +89,8 @@ int main(int argc, char** argv)
     for (int iRun = firstRun; iRun <= lastRun; iRun++)
       {
 	//if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
-	//tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
-	tree->Add( Form("%s/outFile_%.5d.root", data_path.c_str(), iRun) );  
+	tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
+	//tree->Add( Form("%s/outFile_%.5d.root", data_path.c_str(), iRun) );  
 	std::cout << "adding run: " << iRun << std::endl;
       }
 
@@ -203,13 +203,13 @@ int main(int argc, char** argv)
     // */
 
     // list MIP peak energies based off of Landau fit, this is for v2 recomstruction
-    MIP[128] = 144.993;
-    MIP[132] = 141.019;
-    MIP[134] = 144.835;
-    MIP[136] = 140.924;
-    MIP[138] = 152.04;
-    MIP[140] = 169.621;
-    MIP[142] = 152.091;
+    MIP[128] = 144.829;
+    MIP[132] = 141.124;
+    MIP[134] = 144.968;
+    MIP[136] = 141.036;
+    MIP[138] = 152.297;
+    MIP[140] = 170.202;
+    MIP[142] = 152.32;
     
     // calculate intercallibration coefficients
     double avgMIP = (MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
@@ -223,13 +223,13 @@ int main(int argc, char** argv)
     std::cout << "128: " << IC[128] << " 132: " << IC[132] << " 134: " << IC[134] << " 136: " << IC[136] << " 138: " << IC[138] << " 140: " << IC[140] << " 142: " << IC[142] << std::endl;
 
     // list MIP peak energies based off of Landau fit, this is for v2 recomstruction - using Landau to CORRECTED TOT
-    MIP_corr[128] = 120.565;
-    MIP_corr[132] = 113.45;
-    MIP_corr[134] = 121.412;
-    MIP_corr[136] = 113.446;
-    MIP_corr[138] = 137.645;
-    MIP_corr[140] = 185.344;
-    MIP_corr[142] = 137.809;
+    MIP_corr[128] = 120.89;
+    MIP_corr[132] = 113.595;
+    MIP_corr[134] = 121.551;
+    MIP_corr[136] = 113.518;
+    MIP_corr[138] = 137.858;
+    MIP_corr[140] = 185.887;
+    MIP_corr[142] = 137.991;
 
     // calculate intercallibration coefficients   
     double avgMIP_corr = (MIP_corr[128] + MIP_corr[132] + MIP_corr[134] + MIP_corr[136] + MIP_corr[138] + MIP_corr[140] + MIP_corr[142]) / 7;
@@ -310,8 +310,6 @@ int main(int argc, char** argv)
 		pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
 
                 pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar2away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 2 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
-
-		//pCrossTalkOverlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkOverlay_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk Overlayed ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1.1);
 	      }
 
 	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
@@ -436,7 +434,15 @@ int main(int argc, char** argv)
 		    pCrossTalkBar1away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
-                    pCrossTalkBar1away_corr[step1][step2][138]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		    // separate out for channel +- 1 away to see if these have different distributions
+		    if (iCh == 136 )
+		      {
+			pCrossTalkBar1away_corr[step1][step2][136]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
+		    if (iCh == 140 )
+		      {
+			pCrossTalkBar1away_corr[step1][step2][140]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
 		  }
 	      }
 	    // fill the 2 bars away cross talk for ch 138
@@ -448,7 +454,14 @@ int main(int argc, char** argv)
 		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
-                    pCrossTalkBar2away_corr[step1][step2][138]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		    if (iCh == 134 )
+		      {
+			pCrossTalkBar2away_corr[step1][step2][134]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
+		    if (iCh == 142 )
+		      {
+			pCrossTalkBar2away_corr[step1][step2][142]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
 
 		    /*
 		    if (((corrected_tot[138]/ ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
@@ -468,7 +481,14 @@ int main(int argc, char** argv)
                     pCrossTalkBar1away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
-                    pCrossTalkBar1away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		    if (iCh == 134 )
+		      {
+			pCrossTalkBar1away_corr[step1][step2][134]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
+		    if (iCh == 138 )
+		      {
+			pCrossTalkBar1away_corr[step1][step2][138]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
                   }
               }
             // fill the 2 bars away cross talk for ch 136                                                  
@@ -480,7 +500,14 @@ int main(int argc, char** argv)
                     pCrossTalkBar2away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
 
 		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
-                    pCrossTalkBar2away_corr[step1][step2][136]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		    if (iCh == 132 )
+		      {
+			pCrossTalkBar2away_corr[step1][step2][132]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		      }
+		    if (iCh == 140 )
+		      { 
+                        pCrossTalkBar2away_corr[step1][step2][140]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+		      } 
 
 		    /*
 		    if ((corrected_tot[136]/ ICcoeff_corr )  / TotalEnergy_corr  >= 1 )
@@ -532,13 +559,9 @@ int main(int argc, char** argv)
     TCanvas *cTots_scan_correction[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cEff_scan[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalkBar[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalk138[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalk136[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk_corr[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalkBar_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalk138_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalk136_corr[NSTEP1][NSTEP2][NCH];
@@ -565,7 +588,7 @@ int main(int argc, char** argv)
 
                 cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cTots_scan[iStep1][iStep2][iCh]->cd();            
-                hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
+                hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/4);
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("tot [ns]");
                 hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
@@ -573,11 +596,11 @@ int main(int argc, char** argv)
 		// hTot_cut is for selecting the position of one bar and plotting the Landau peak
 		// use the same binning for the plot before and after the cut on a single bar
 		// different line color for the MIP peak after the bar cut (this is landau peak after choosing each bar)
-		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
+		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/4);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
 		// do the Landau fit, and set the range over which the fit is done (reduced from 120-400 to 130-250
-		TF1 * fitLandau = new TF1 ("fitLandau","landau",130,250);
+		TF1 * fitLandau = new TF1 ("fitLandau","landau",130,220);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau, "QRL");
 		std::cout << "Ch # " << iCh << " Landau fit normalization coeff: " << fitLandau->GetParameter(0) << " most  probable value: " << fitLandau->GetParameter(1) << " Lambda value: " << fitLandau->GetParameter(2) << std::endl;
 		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
@@ -585,7 +608,7 @@ int main(int argc, char** argv)
 
 		cTots_scan_correction[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cTots_scan_correction[iStep1][iStep2][iCh]->cd();
-                hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
+                hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/4);
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Corrected tot [ns]");
                 hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Counts");
@@ -593,11 +616,11 @@ int main(int argc, char** argv)
                 // hTot_cut is for selecting the position of one bar and plotting the Landau peak
                 // use the same binning for the plot before and after the cut on a single bar                                                         
                 // different line color for the MIP peak after the bar cut (this is landau peak after choosing each bar)                                                   
-                hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/8);
+                hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF/4);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                // do the Landau fit, and set the range over which the fit is done (reduced from 120-400 to 130-250                              
-		TF1 * fitLandau_corr = new TF1 ("fitLandau_corr","landau",92,519);
+                // do the Landau fit, and set the range over which the fit is done (reduced from 120-400 to 130-220                              
+		TF1 * fitLandau_corr = new TF1 ("fitLandau_corr","landau",93,425);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau_corr, "QRL");
 		std::cout << "Ch # " << iCh << " Landau fit on corrected tot normalization coeff: " << fitLandau_corr->GetParameter(0) << " most  probable value: " << fitLandau_corr->GetParameter(1) << " Lambda value: " << fitLandau_corr->GetParameter(2) << std::endl;
                 cTots_scan_correction[iStep1][iStep2][iCh]->SaveAs(Form("hTot_corr_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
@@ -645,21 +668,29 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Draw();
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->SetLineColor(kGreen+2);
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->SetLineColor(kRed+2);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->SetLineColor(kMagenta+2);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Draw("same");
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->SetLineColor(kRed+1);
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->SetLineColor(kRed-7);
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Draw("same");
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->SetLineColor(kMagenta+3);
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][142]->SetLineColor(kMagenta-4);
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][142]->Draw("same");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
 		    cCrossTalk138_corr[iStep1][iStep2][138]->SaveAs(Form("crosstalk138_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.9 );
+		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.65, 0.88 );
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausGreen, "QRL");
-                    TF1 * fitGausRed = new TF1 ("fitGausRed", "gaus", 0.05, 0.3 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausRed, "QRL");
-                    TF1 * fitGausPurple = new TF1 ("fitGausPurple", "gaus", 0.0, 0.1 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausPurple, "QRL");
-		    std::cout << "fractional energy ch 138: " << fitGausGreen->GetParameter(1) << " fractional energy ch 138 1 away: " << fitGausRed->GetParameter(1) << " fractional energy ch 138 2 away: " << fitGausPurple->GetParameter(1) << std::endl;
+                    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.3 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->Fit(fitGausRedr, "QRL");
+		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.3 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausRedl, "QRL");
+                    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.09 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][142]->Fit(fitGausPurpler, "QRL");
+		    TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.09 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->Fit(fitGausPurplel, "QRL");
+		    std::cout << "fractional energy ch 138: " << fitGausGreen->GetParameter(1) << " fractional energy ch 138 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy ch 138 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
 		  }
 
                 if (iCh == 136 )
@@ -683,21 +714,29 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Draw();
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->SetLineColor(kGreen+2);
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->SetLineColor(kRed+2);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->SetLineColor(kMagenta+2);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Draw("same");
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->SetLineColor(kRed+1);
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->SetLineColor(kRed-7);
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->Draw("same");
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][132]->SetLineColor(kMagenta+3);
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->SetLineColor(kMagenta-4);
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][132]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->Draw("same");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
 		    cCrossTalk136_corr[iStep1][iStep2][136]->SaveAs(Form("crosstalk136_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.6, 0.9 );
+		    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.65, 0.94 );
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausGreen1, "QRL");
-                    TF1 * fitGausRed1 = new TF1 ("fitGausRed1", "gaus", 0.05, 0.3 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausRed1, "QRL");
-                    TF1 * fitGausPurple1 = new TF1 ("fitGausPurple1", "gaus", 0.0, 0.1 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausPurple1, "QRL");
-		    std::cout << "fractional energy ch 136: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 136 1 away: " << fitGausRed1->GetParameter(1) << " fractional energy ch 136 2 away: " << fitGausPurple1->GetParameter(1) << std::endl;
+                    TF1 * fitGausRed1l = new TF1 ("fitGausRed1l", "gaus", 0.01, 0.2 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->Fit(fitGausRed1l, "QRL");
+		    TF1 * fitGausRed1r = new TF1 ("fitGausRed1r", "gaus", 0.01, 0.2 );
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausRed1r, "QRL");
+                    TF1 * fitGausPurple1l = new TF1 ("fitGausPurple1l", "gaus", 0.01, 0.25 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][132]->Fit(fitGausPurple1l, "QRL");
+		    TF1 * fitGausPurple1r = new TF1 ("fitGausPurple1r", "gaus", 0.01, 0.25 );
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->Fit(fitGausPurple1r, "QRL");
+		    std::cout << "fractional energy ch 136: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 136 1 away (l,r): " << fitGausRed1l->GetParameter(1) << " and " << fitGausRed1r->GetParameter(1) << " fractional energy ch 136 2 away (l,r): " << fitGausPurple1l->GetParameter(1) << " and " << fitGausPurple1r->GetParameter(1) << std::endl;
                   }
 
 		/*// plotting beam profile
@@ -771,9 +810,10 @@ int main(int argc, char** argv)
 	hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetRange(0,400);
         hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("tot [ns]");
         hTot[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetYaxis()->SetTitle("Counts");
-	if ( myChList[chId] == 143 )
+	if ( myChList[chId] == 142 )
 	  {
 	    cArrayTots->SaveAs(Form("hTot_array_chId%.3d.pdf", myChList[chId]));
+	    break;
 	  }
       }
     
@@ -786,9 +826,10 @@ int main(int argc, char** argv)
 	hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetRange(-250,-100);
         hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("Time [ps]");
         hTime[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetYaxis()->SetTitle("Counts");
-	if ( myChList[chId] == 143 )
+	if ( myChList[chId] == 142 )
 	  {
 	    cArrayTimes->SaveAs(Form("hTime_array_chId%.3d.pdf", myChList[chId]));
+	    break;
 	  }
       }
     
@@ -811,6 +852,7 @@ int main(int argc, char** argv)
 	if (barId == NBARS - 1)
 	  {
 	    cArrayCTR_UD->SaveAs(Form("hCTR_UD_array_barId%.3d.pdf", barId));
+	    break;
 	  }
         std::cout << "CTR_UD [" << barId << "] = " << fitGaus->GetParameter(2) << " ps --> sigma_bar = " << fitGaus->GetParameter(2)/2 << " ps " << std::endl;
       }

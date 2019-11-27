@@ -160,7 +160,7 @@ int main(int argc, char** argv)
 
     int REBIN_COEFF = 32;
     
-    int NCH = 400;
+    #define NCH 400
 
     // these are from the board mapping on the google sheet tab 
     int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // this is for the first array
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
     // centers for second array when only one side of the bar is read out    
     // /*
     center[128] = 7;           
-    center[132] = 11.18;                                                                         
+    center[132] = 11.18;                    
     center[134] = 14.32;                                        
     center[136] = 17.49;                                    
     center[138] = 20.62;                              
@@ -344,37 +344,33 @@ int main(int argc, char** argv)
 	// channel loop to calculate total energy deposit
 	double TotalEnergy = 0;
 	double TotalEnergy_corr = 0;
+	double corrected_tot[NCH] = {0}; // initialize the corrected_tot for each channel to 0 at the start of each event loop
 	for (int iCh = 0; iCh<NCH; iCh++)
 	  {
 	    // if not one of channels that we care about, skip it
 	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	    if (iCh%2 == 1 ) continue; // skip odd channels in case they are in myChList
 	    // want to find the total energy in the event, in any channel
 	    //std::cout << "energy " << chtot[iCh] << " for channel " << iCh << std::endl;
 	    if ( chtot[iCh] < -100 ) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999)
 
 	    // corrected energy given the correction to the tot linearization
 	    //double corrected_tot = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
-	    double corrected_tot = 14.13 * (exp(0.01562 * chtot[iCh]/1.e3)-1);
-	    double ICcoeff_corr = MIP_corr[iCh] / avgMIP_corr;
-	    double ICcoeff = MIP[iCh] / avgMIP;
-	    TotalEnergy += (chtot[iCh]/1.e3) / ICcoeff;
-	    TotalEnergy_corr += corrected_tot / ICcoeff_corr;
+	    corrected_tot[iCh] = 14.13 * (exp(0.01562 * (chtot[iCh]/1.e3))-1);
+	    TotalEnergy += (chtot[iCh]/1.e3) / IC[iCh];
+	    TotalEnergy_corr += corrected_tot[iCh] / IC_corr[iCh];
 	  }
-	//std::cout << "total energy: " << TotalEnergy << std::endl;
 	// channel loop in the event loop
-	double corrected_tot[NCH];
 	for (int iCh = 0; iCh<NCH; iCh++)
 	  {
 	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	    if (iCh%2 == 1 ) continue;
 	    //if (step1 != 6) continue;
 	    //if (step2 != 0) continue;
 
 	    //if (chtot[iCh]>0) std::cout << "filling ch[" << iCh << "] with tot = " << chtot[iCh]/1.e3 << " ns :: and time-t_ref = " << chTime[iCh] << "  - " << time_ref << " = " << chTime[iCh]-time_ref << std::endl;            
 	    //std::cout << Form("filling histograms for Ch_%i, step1_%f, step2_%f",iCh, step1, step2) << std::endl;
 	    //std::cout << Form("channel time over threshold_%f",chtot[iCh]) << std::endl;
-
-	    //corrected_tot[iCh] = (0.3639 * chtot[iCh]/1.e3)  -  (0.001911 * pow((chtot[iCh]/1.e3),2))  +  (0.00003503 * pow((chtot[iCh]/1.e3),3)) ;
-	    corrected_tot[iCh] = 14.13 * (exp(0.01562 * chtot[iCh]/1.e3)-1);
 
 	    hTot[step1][step2][iCh]->Fill(chtot[iCh]/1.e3);
 	    hTot_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
@@ -387,26 +383,11 @@ int main(int argc, char** argv)
 
 	    if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 5 && chtot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
 	      {
-		double ICcoeff = MIP[iCh] /avgMIP;
-		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
-
-		double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-                pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
-
-		/*
-		if (((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
-		  {
-		    std::cout<< "Large value for cross talk (blue) in ch " << iCh << " with corrected tot = " << (corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[iCh]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
-		    std::cout<< "Energy total value corrected = " << TotalEnergy_corr << " uncorrected = " << TotalEnergy << " tot corr = " << corrected_tot[iCh] / ICcoeff_corr << " tot uncorrected = " << (chtot[iCh]/1.e3) / ICcoeff << std::endl;
-		  }
-		*/
+		pCrossTalk[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy );
+                pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr );
 	      }
 
-	    //      std::cout << "htot" << std::endl;
-	    //      std::cout << "ypos"<< std::endl;
-	    //	    std::cout << "time"<< std::endl;
-
-	    // try and cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
+	    // cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
 	    // do this for each channel, based off of the stats found from the fit to the efficiency plots
 	    // for the cross talk (green plot) cut around the MIP position requring signal in the central bar to be 0.85*MIP - 4*MIP
 	    // MIP and x_dut cut should be redundant actually
@@ -416,11 +397,9 @@ int main(int argc, char** argv)
 		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
 		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh]) 
 		  {
-		    double ICcoeff = MIP[iCh] /avgMIP;
-		    pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / ICcoeff )  / TotalEnergy );
+		    pCrossTalkBar[step1][step2][iCh]->Fill(((chtot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[iCh] /avgMIP_corr;
-		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / ICcoeff_corr )  / TotalEnergy_corr );
+		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr );
 		  }
 	      }
 
@@ -428,93 +407,71 @@ int main(int argc, char** argv)
 	    if ( (x_dut < center[140]+1 && x_dut > center[140]-1) || (x_dut < center[136]+1 && x_dut > center[136]-1) )
 	      {
 		// put a MIP cut on the bar +-1 away from 138
-		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && ( iCh == 140 || iCh == 136))
+		if (TotalEnergy < 2000 && TotalEnergy > 0 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && ( iCh == 140 || iCh == 136))
 		  {
-		    double ICcoeff = MIP[138] /avgMIP;
-		    pCrossTalkBar1away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
+		    pCrossTalkBar1away[step1][step2][138]->Fill(((chtot[138]/1.e3) / IC[138] ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
 		    // separate out for channel +- 1 away to see if these have different distributions
 		    if (iCh == 136 )
 		      {
-			pCrossTalkBar1away_corr[step1][step2][136]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar1away_corr[step1][step2][136]->Fill((corrected_tot[138] / IC_corr[138] )  / TotalEnergy_corr );
 		      }
 		    if (iCh == 140 )
 		      {
-			pCrossTalkBar1away_corr[step1][step2][140]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar1away_corr[step1][step2][140]->Fill((corrected_tot[138] / IC_corr[138] )  / TotalEnergy_corr );
 		      }
 		  }
 	      }
 	    // fill the 2 bars away cross talk for ch 138
 	    if ( (x_dut < center[142]+1 && x_dut > center[142]-1 ) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
 	      {
-		if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 142 || iCh == 134) )
+		if (TotalEnergy < 2000 && TotalEnergy > 0 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 142 || iCh == 134) )
 		  {
-		    double ICcoeff = MIP[138] /avgMIP;
-		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / ICcoeff ) / TotalEnergy );
+		    pCrossTalkBar2away[step1][step2][138]->Fill(((chtot[138]/1.e3) / IC[138] ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[138] /avgMIP_corr;
 		    if (iCh == 134 )
 		      {
-			pCrossTalkBar2away_corr[step1][step2][134]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar2away_corr[step1][step2][134]->Fill((corrected_tot[138] / IC_corr[138] )  / TotalEnergy_corr );
 		      }
 		    if (iCh == 142 )
 		      {
-			pCrossTalkBar2away_corr[step1][step2][142]->Fill((corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar2away_corr[step1][step2][142]->Fill((corrected_tot[138] / IC_corr[138] )  / TotalEnergy_corr );
 		      }
-
-		    /*
-		    if (((corrected_tot[138]/ ICcoeff_corr )  / TotalEnergy_corr) >= 1 )
-		      {
-			std::cout<< "Large value for 2 bar away (purple) cross talk ch 138 with corrected tot = " << (corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[138]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
-		      }
-		    */
 		  }
 	      }
 
             // fill the 1 bar away cross talk for ch 136
             if ( (x_dut < center[138]+1 && x_dut > center[138]-1) || (x_dut < center[134]+1 && x_dut > center[134]-1) )
               {
-                if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 138 || iCh == 134))
+                if (TotalEnergy < 2000 && TotalEnergy > 0 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 138 || iCh == 134))
                   {
-                    double ICcoeff = MIP[136] /avgMIP;
-                    pCrossTalkBar1away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
+                    pCrossTalkBar1away[step1][step2][136]->Fill(((chtot[136]/1.e3) / IC[136] ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
 		    if (iCh == 134 )
 		      {
-			pCrossTalkBar1away_corr[step1][step2][134]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar1away_corr[step1][step2][134]->Fill((corrected_tot[136] / IC_corr[136] )  / TotalEnergy_corr );
 		      }
 		    if (iCh == 138 )
 		      {
-			pCrossTalkBar1away_corr[step1][step2][138]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar1away_corr[step1][step2][138]->Fill((corrected_tot[136] / IC_corr[136] )  / TotalEnergy_corr );
 		      }
                   }
               }
             // fill the 2 bars away cross talk for ch 136                                                  
             if ( (x_dut < center[140]+1 && x_dut > center[140]-1 ) || (x_dut < center[132]+1 && x_dut > center[132]-1) )
               {
-                if (TotalEnergy < 2000 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 140 || iCh == 132))
+                if (TotalEnergy < 2000 && TotalEnergy > 0 && chtot[iCh]/1.e3 > 0.85*MIP[iCh] && chtot[iCh]/1.e3<4*MIP[iCh] && (iCh == 140 || iCh == 132))
                   {
-                    double ICcoeff = MIP[136] /avgMIP;
-                    pCrossTalkBar2away[step1][step2][136]->Fill(((chtot[136]/1.e3) / ICcoeff ) / TotalEnergy );
+                    pCrossTalkBar2away[step1][step2][136]->Fill(((chtot[136]/1.e3) / IC[136] ) / TotalEnergy );
 
-		    double ICcoeff_corr = MIP_corr[136] /avgMIP_corr;
 		    if (iCh == 132 )
 		      {
-			pCrossTalkBar2away_corr[step1][step2][132]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+			pCrossTalkBar2away_corr[step1][step2][132]->Fill((corrected_tot[136] / IC_corr[136] )  / TotalEnergy_corr );
 		      }
 		    if (iCh == 140 )
 		      { 
-                        pCrossTalkBar2away_corr[step1][step2][140]->Fill((corrected_tot[136] / ICcoeff_corr )  / TotalEnergy_corr );
+                        pCrossTalkBar2away_corr[step1][step2][140]->Fill((corrected_tot[136] / IC_corr[136] )  / TotalEnergy_corr );
 		      } 
-
-		    /*
-		    if ((corrected_tot[136]/ ICcoeff_corr )  / TotalEnergy_corr  >= 1 )
-                      {
-			std::cout<< "Large value for 2 bar away (purple) cross talk ch 138 with corrected tot = " << (corrected_tot[138] / ICcoeff_corr )  / TotalEnergy_corr << " uncorredcted tot = " << (chtot[138]/1.e3 / ICcoeff )  / TotalEnergy << std::endl;
-		      }
-		    */ 
                   }
               }
 
@@ -582,6 +539,7 @@ int main(int argc, char** argv)
             {
 	      // if not one of channels that we care about, skip it                                                                                                  
                 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+		if (iCh%2 == 1) continue; // dont plot odd channel numbers 
       		//if (step1_vct.at(iStep1) !=6) continue;
 		//if (step2_vct.at(iStep2) !=0) continue;
 		std::cout<< "step1, step2 " << step1_vct.at(iStep1) << step2_vct.at(iStep2) << std::endl;
@@ -603,7 +561,7 @@ int main(int argc, char** argv)
 		TF1 * fitLandau = new TF1 ("fitLandau","landau",130,220);
 		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau, "QRL");
 		std::cout << "Ch # " << iCh << " Landau fit normalization coeff: " << fitLandau->GetParameter(0) << " most  probable value: " << fitLandau->GetParameter(1) << " Lambda value: " << fitLandau->GetParameter(2) << std::endl;
-		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		cTots_scan[iStep1][iStep2][iCh]->SaveAs(Form("hTot_ch%.3d_sep1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 
 		cTots_scan_correction[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
@@ -680,15 +638,15 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
 		    cCrossTalk138_corr[iStep1][iStep2][138]->SaveAs(Form("crosstalk138_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.65, 0.88 );
+		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.84 );
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][138]->Fit(fitGausGreen, "QRL");
-                    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.3 );
+                    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.25 );
                     pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][140]->Fit(fitGausRedr, "QRL");
-		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.3 );
+		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.25 );
                     pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][136]->Fit(fitGausRedl, "QRL");
-                    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.09 );
+                    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.08 );
                     pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][142]->Fit(fitGausPurpler, "QRL");
-		    TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.09 );
+		    TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.08 );
                     pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][134]->Fit(fitGausPurplel, "QRL");
 		    std::cout << "fractional energy ch 138: " << fitGausGreen->GetParameter(1) << " fractional energy ch 138 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy ch 138 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
 		  }

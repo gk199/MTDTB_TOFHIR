@@ -167,22 +167,22 @@ int main(int argc, char** argv)
     double IC_corr[NCH];
 
     // centers for first array when both sides of the bars are read out
-    center[128] = 5;
-    center[129] = 5;
+    center[128] = 4.726;
+    center[129] = 4.766;
     center[130] = 0;
-    center[131] = 8;
-    center[132] = 11;
-    center[133] = 11;
-    center[134] = 14;
-    center[135] = 14;
-    center[136] = 17;
-    center[137] = 17;
-    center[138] = 20;
-    center[139] = 20;
-    center[140] = 23;
-    center[141] = 23;
-    center[142] = 26;
-    center[143] = 26;
+    center[131] = 7.803;
+    center[132] = 10.727;
+    center[133] = 10.909;
+    center[134] = 13.907;
+    center[135] = 14.134;
+    center[136] = 16.885;
+    center[137] = 17.0869;
+    center[138] = 20.0857;
+    center[139] = 20.2715;
+    center[140] = 23.1541;
+    center[141] = 23.3245;
+    center[142] = 25.8789;
+    center[143] = 25.7646;
     // centers for second array when only one side of the bar is read out    
     /*
     center[128] = 7;           
@@ -194,43 +194,43 @@ int main(int argc, char** argv)
     center[142] = 26.50;                              
     */
 
-    // list MIP peak energies based off of Landau fit, this is for v5 recomstruction
-    MIP[128] = 145.025;
-    MIP[132] = 140.983;
-    MIP[134] = 144.963;
-    MIP[136] = 140.984;
-    MIP[138] = 152.061;
-    MIP[140] = 170.601;
-    MIP[142] = 152.47;
+    // list MIP peak energies based off of Landau fit, this is for v5 recomstruction, second array commented out
+    MIP[128] = 164.145; //145.025;
+    MIP[132] = 160.559; //140.983;
+    MIP[134] = 160.793; //144.963;
+    MIP[136] = 156.686; //140.984;
+    MIP[138] = 171.43; //152.061;
+    MIP[140] = 188.572; //170.601;
+    MIP[142] = 163.334; //152.47;
     
     // for first array
-    MIP[129] = 140;
-    MIP[131] = 140;
-    MIP[133] = 140;
-    MIP[135] = 140;
-    MIP[137] = 140;
-    MIP[139] = 140;
-    MIP[141] = 140;
-    MIP[143] = 140;
+    MIP[129] = 177.052;
+    MIP[131] = 159.115;
+    MIP[133] = 183.162;
+    MIP[135] = 171.88;
+    MIP[137] = 191.504;
+    MIP[139] = 181.163;
+    MIP[141] = 190.303;
+    MIP[143] = 179.268;
 
-    // list MIP peak energies based off of Landau fit, this is for v2 recomstruction - using Landau to CORRECTED TOT                                   
-    MIP_corr[128] = 121.189;
-    MIP_corr[132] = 113.35;
-    MIP_corr[134] = 121.549;
-    MIP_corr[136] = 113.382;
-    MIP_corr[138] = 137.389;
-    MIP_corr[140] = 186.211;
-    MIP_corr[142] = 138.323;
+    // list MIP peak energies based off of Landau fit, this is for v5 recomstruction - using Landau to CORRECTED TOT, second array commented out
+    MIP_corr[128] = 167.687; //121.189;
+    MIP_corr[132] = 158.021; //113.35;
+    MIP_corr[134] = 159.156; //121.549;
+    MIP_corr[136] = 148.25;  //113.382;
+    MIP_corr[138] = 186.885; //137.389;
+    MIP_corr[140] = 238.98; //186.211;
+    MIP_corr[142] = 165.417; //138.323;
 
     // for first array                                                                                  
-    MIP_corr[129] = 120;
-    MIP_corr[131] = 120;
-    MIP_corr[133] = 120;
-    MIP_corr[135] = 120;
-    MIP_corr[137] = 120;
-    MIP_corr[139] = 120;
-    MIP_corr[141] = 120;
-    MIP_corr[143] = 120;
+    MIP_corr[129] = 206.247;
+    MIP_corr[131] = 154.388;
+    MIP_corr[133] = 222.879;
+    MIP_corr[135] = 191.444;
+    MIP_corr[137] = 249.808;
+    MIP_corr[139] = 214.936;
+    MIP_corr[141] = 239.074;
+    MIP_corr[143] = 212.704;
 
     // calculate intercallibration coefficients
     //double avgMIP = (MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
@@ -476,13 +476,8 @@ int main(int argc, char** argv)
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cEff_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk138[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk136[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay_corr[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk136_corr[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk137_corr[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk138_corr[NSTEP1][NSTEP2][NCH];
-    TCanvas *cCrossTalk139_corr[NSTEP1][NSTEP2][NCH];
+    TCanvas *cCrossTalk12away_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_over_scan;
     //    TCanvas *cXposYpos_scan[NSTEP1][NSTEP2][NCH];
     //    TCanvas *cXpos_over_scan[NSTEP1][NSTEP2];
@@ -566,24 +561,10 @@ int main(int argc, char** argv)
                 gPad->SetLogy();
                 cCrossTalkOverlay_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalkOverlay_corr_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
-		if (iCh == 138 )
+		if (iCh == 136 || iCh == 137 || iCh == 138 || iCh == 139)
 		  {
-		    cCrossTalk138[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk138_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk138_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
-		    cCrossTalk138[iStep1][iStep2][iCh]->cd();
-		    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-		    pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-		    pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		    pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kRed+2);
-		    pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		    pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kMagenta+2);
-		    pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit");
-		    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-		    gPad->SetLogy();
-		    cCrossTalk138[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk138_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-
-		    cCrossTalk138_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk138_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk138_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
-                    cCrossTalk138_corr[iStep1][iStep2][iCh]->cd();
+		    cCrossTalk12away_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+                    cCrossTalk12away_corr[iStep1][iStep2][iCh]->cd();
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
@@ -598,129 +579,20 @@ int main(int argc, char** argv)
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
                     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
                     gPad->SetLogy();
-		    cCrossTalk138_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk138_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.84 );
+		    cCrossTalk12away_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk12away%.3d_corr_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		    //		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.84 );
+		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.3, 0.6 );
                     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen, "QRL");
-                    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.25 );
+		    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.25 );
                     pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Fit(fitGausRedr, "QRL");
-		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.25 );
+      		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.25 );
                     pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Fit(fitGausRedl, "QRL");
-                    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.08 );
+		    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.08 );
                     pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Fit(fitGausPurpler, "QRL");
 		    TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.08 );
                     pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Fit(fitGausPurplel, "QRL");
-		    std::cout << "fractional energy ch 138: " << fitGausGreen->GetParameter(1) << " fractional energy ch 138 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy ch 138 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
+		    std::cout << "fractional energy ch " << iCh << " :" << fitGausGreen->GetParameter(1) << " fractional energy 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
 		  }
-
-                if (iCh == 136 )
-                  {
-                    cCrossTalk136[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk136_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk136_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)),800, 400);
-                    cCrossTalk136[iStep1][iStep2][iCh]->cd();
-                    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-                    pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-                    pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kRed+2);
-                    pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kMagenta+2);
-                    pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit");
-                    pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-                    gPad->SetLogy();
-                    cCrossTalk136[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk136_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-
-		    cCrossTalk136_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk136_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk136_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)),800, 400);
-                    cCrossTalk136_corr[iStep1][iStep2][iCh]->cd();
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->SetLineColor(kRed+1);
-		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->SetLineColor(kRed-7);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->SetLineColor(kMagenta+3);
-		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->SetLineColor(kMagenta-4);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Draw("same");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-                    gPad->SetLogy();
-		    cCrossTalk136_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk136_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.65, 0.94 );
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen1, "QRL");
-                    TF1 * fitGausRed1l = new TF1 ("fitGausRed1l", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Fit(fitGausRed1l, "QRL");
-		    TF1 * fitGausRed1r = new TF1 ("fitGausRed1r", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Fit(fitGausRed1r, "QRL");
-                    TF1 * fitGausPurple1l = new TF1 ("fitGausPurple1l", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Fit(fitGausPurple1l, "QRL");
-		    TF1 * fitGausPurple1r = new TF1 ("fitGausPurple1r", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Fit(fitGausPurple1r, "QRL");
-		    std::cout << "fractional energy ch 136: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 136 1 away (l,r): " << fitGausRed1l->GetParameter(1) << " and " << fitGausRed1r->GetParameter(1) << " fractional energy ch 136 2 away (l,r): " << fitGausPurple1l->GetParameter(1) << " and " << fitGausPurple1r->GetParameter(1) << std::endl;
-                  }
-
-                if (iCh == 139 )
-                  {
-                    cCrossTalk139_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk139_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk139_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)),800, 400);
-                    cCrossTalk139_corr[iStep1][iStep2][iCh]->cd();
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->SetLineColor(kRed+1);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->SetLineColor(kRed-7);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->SetLineColor(kMagenta+3);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->SetLineColor(kMagenta-4);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Draw("same");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-                    gPad->SetLogy();
-                    cCrossTalk139_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk139_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-                    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.65, 0.94 );
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen1, "QRL");
-                    TF1 * fitGausRed1l = new TF1 ("fitGausRed1l", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Fit(fitGausRed1l, "QRL");
-                    TF1 * fitGausRed1r = new TF1 ("fitGausRed1r", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Fit(fitGausRed1r, "QRL");
-                    TF1 * fitGausPurple1l = new TF1 ("fitGausPurple1l", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Fit(fitGausPurple1l, "QRL");
-                    TF1 * fitGausPurple1r = new TF1 ("fitGausPurple1r", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Fit(fitGausPurple1r, "QRL");
-		    std::cout << "fractional energy ch 139: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 139 1 away (l,r): " << fitGausRed1l->GetParameter(1) << " and " << fitGausRed1r->GetParameter(1) << " fractional energy ch 139 2 away (l,r): " << fitGausPurple1l->GetParameter(1) << " and " << fitGausPurple1r->GetParameter(1) << std::endl;
-                  }
-
-                if (iCh == 137 )
-                  {
-                    cCrossTalk137_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk137_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk137_corr_step1_%.1f_step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)),800, 400);
-                    cCrossTalk137_corr[iStep1][iStep2][iCh]->cd();
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->SetLineColor(kRed+1);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->SetLineColor(kRed-7);
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->SetLineColor(kMagenta+3);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->SetLineColor(kMagenta-4);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Draw("same");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-                    gPad->SetLogy();
-                    cCrossTalk137_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk137_corr_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-                    TF1 * fitGausGreen1 = new TF1 ("fitGausGreen1", "gaus", 0.65, 0.94 );
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen1, "QRL");
-                    TF1 * fitGausRed1l = new TF1 ("fitGausRed1l", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-2]->Fit(fitGausRed1l, "QRL");
-                    TF1 * fitGausRed1r = new TF1 ("fitGausRed1r", "gaus", 0.01, 0.2 );
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+2]->Fit(fitGausRed1r, "QRL");
-                    TF1 * fitGausPurple1l = new TF1 ("fitGausPurple1l", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh-4]->Fit(fitGausPurple1l, "QRL");
-                    TF1 * fitGausPurple1r = new TF1 ("fitGausPurple1r", "gaus", 0.01, 0.25 );
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh+4]->Fit(fitGausPurple1r, "QRL");
-		    std::cout << "fractional energy ch 137: " << fitGausGreen1->GetParameter(1) << " fractional energy ch 137 1 away (l,r): " << fitGausRed1l->GetParameter(1) << " and " << fitGausRed1r->GetParameter(1) << " fractional energy ch 137 2 away (l,r): " << fitGausPurple1l->GetParameter(1) << " and " << fitGausPurple1r->GetParameter(1) << std::endl;
-                  }
 
 		/*// plotting beam profile
 		cXposYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), Form("cXpos_ch%.3d_step1_%.1f_step2_.%1f", iCh, step1_vct.at(iStep1), step1_vct.at(iStep1)), 800, 400);

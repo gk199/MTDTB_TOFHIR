@@ -3,11 +3,14 @@
 Analysis code for the SiPM array FNAL testbeams. To compile,
 
     g++ -Wall -o plotTOFHIR_to_trigger plotTOFHIR_to_trigger.C functions.hh `root-config --cflags --glibs` -lSpectrum
+    g++ -Wall -o plotTOFHIR_to_trigger_FebTB plotTOFHIR_to_trigger_FebTB.C functions.hh `root-config --cflags --glibs` -lSpectrum
 
 and to run,
 
     ./plotTOFHIR_to_trigger <first run number> <last run number> <path to data>
+    ./plotTOFHIR_to_trigger_FebTB <first run number> <last run number> <path to data>
 
+## June Testbeam Details
 Data from the June 2019 FNAL Testbeam is stored in 
 
     /eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Jun2019/TOFHIR/RecoData/RecoWithTracks/v2/
@@ -24,4 +27,16 @@ For Run 15692, this is with vth1 = 0 and vth2 = 30 (these are the starting time 
 
 with [pol3 plotted here](https://malberti.web.cern.ch/malberti/MTD/Lab5015/TOFHIR/NonLinearityToT/pol3/vth1_0_vth2_30/c_correction.pdf "Martina Malberti Tot non linearity pol3") and [expo plotted here](https://malberti.web.cern.ch/malberti/MTD/Lab5015/TOFHIR/NonLinearityToT/vth1_0_vth2_30/c_correction.png "Martina Malberti Tot non linearity exponential"). This ToT linearization is applied for the Landau fit and the cross talk studies. 
 
+## February Testbeam Details
+Data from February 2020 FNAL Testbeam is stored in
+     
+     /eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Feb2020/TOFHIR/RecoData/v1/RecoWithTracks/
+
+[Run logbook](https://docs.google.com/spreadsheets/d/1BTyPMHOUD97ctFpJEPvZQs3BoDRCWzZvoSHltiQdLSg/edit#gid=1048771982 "February 2020 Run Logbook") has details about configuration for each run. Additional code for plots in 
+
+     /afs/cern.ch/user/m/mtd/Lab5015Analysis/main
+
+with plots [here](http://miptimingdetector.web.cern.ch/miptimingdetector/). Mostly run in QDC mode where tot, qfine, and energy are read out. Details for [TOFPET](https://drive.google.com/file/d/15z_Hjv814W3Wo-l9Emn5No1tnk_T7Np1/view).
+
+## Plotting Cross Talk
 Cross talk: blue plot shows fractional energy in a bar when a MIP is deposited somewhere in the array, green shows when the MIP is in the central bar, red shows when MIP is in neighboring bar, and purple when the MIP is in a second to neighboring bar.

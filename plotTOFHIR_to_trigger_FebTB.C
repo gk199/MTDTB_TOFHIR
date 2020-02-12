@@ -90,7 +90,6 @@ int main(int argc, char** argv)
     for (int iRun = firstRun; iRun <= lastRun; iRun++)
       {
 	//if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
-	//tree->Add( Form("%s/run%.5d_events_withTrack.root", data_path.c_str(), iRun) );
 	tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) );  
 	std::cout << "adding run: " << iRun << std::endl;
       }
@@ -123,7 +122,6 @@ int main(int argc, char** argv)
       {
         tree->GetEntry(iEvt);
         //std::cout << "step1 = " << step1 << " :: step2 = " << step2 <<std::endl;
-
 	// getting vth1 vth2 and vthe from step2 for each event
 	float vth1 = float(int(step2/10000)-1);;
 	float vth2 = float(int((step2-10000*vth1)/100)-1);
@@ -167,7 +165,7 @@ int main(int argc, char** argv)
     
     #define NCH 400
 
-    // these are from the board mapping on the google sheet tab 
+    // these are from the board mapping on the google sheet tab for Feb11 and before. May change Feb12 and after
     //    int myChList[] = {0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32}; // from channelMapping1 in mtd drawMatrices.cfg, VERTICAL
     //    int myChList1[] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19}; // one side from channelMapping1
     //    int myChList2[] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // one side from channelMapping1
@@ -211,9 +209,11 @@ int main(int argc, char** argv)
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
     std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
     std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Xpos; 
+    std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Ypos;
     std::map<float, std::map<float, std::map<int, TH2F * > > > pXpos_Ypos_Tot;
     std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
     std::map<float, std::map<float, TProfile * > > pTot_vs_Xpos_overlay;
+    std::map<float, std::map<float, TProfile * > > pTot_vs_Ypos_overlay;
     std::map<float, std::map<float, std::map<int, TProfile2D * > > > pXY_Edep;
     std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalk;
     std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar;
@@ -227,6 +227,7 @@ int main(int argc, char** argv)
     //    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkOverlay;
 
     TH1F * hPosX = new TH1F ("hPosX", "hPosX", 200, minXpos, maxXpos);
+    TH1F * hPosY = new TH1F ("hPosY", "hPosY", 200, minYpos, maxYpos);
     
     // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
     for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
@@ -241,7 +242,9 @@ int main(int argc, char** argv)
 		hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_corr_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold corrected with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
 		hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time Hist, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+		pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxXpos);
+		pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxYpos);
 		pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
 
 		pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
@@ -258,6 +261,7 @@ int main(int argc, char** argv)
 	      }
 
 	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+	    pTot_vs_Ypos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Ypos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
 
 	    // bar loop (outside of channel loop) to define time resolution for a single bar
             for (int iBar = 0; iBar < NBARS; iBar++)
@@ -286,6 +290,7 @@ int main(int argc, char** argv)
 	//hCTR[step1][step2]->Fill(time2-time1);
 	long long time_ref = time[384];
 	hPosX->Fill(x_dut);
+	hPosY->Fill(y_dut);
 	// channel loop to calculate total energy deposit
 	double TotalEnergy[2] = {0};
 	double TotalEnergy_corr[2] = {0};
@@ -406,7 +411,7 @@ int main(int argc, char** argv)
 
 	    //	    if (tot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
 	    pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, tot[iCh]/1.e3);
-	    //pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, tot[iCh]/1.e3);
+	    pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, tot[iCh]/1.e3);
 		
 	    // make efficiency plots - 1 if 0.9 - 3 * MIP energy, 0 otherwise
 	    if (x_dut != 0 && y_dut != 0)
@@ -415,6 +420,7 @@ int main(int argc, char** argv)
 		if ((tot[iCh]/1.e3) >= 0.9 * MIP[iCh] && (tot[iCh]/1.e3) <= 3 * MIP[iCh] && x_dut > 0)
 		  {
 		    pEff_vs_Xpos[step1][step2][iCh]->Fill(x_dut, 1);
+		    pEff_vs_Ypos[step1][step2][iCh]->Fill(y_dut, 1);
 		  }
 	      }
 	    if (step1 > 1.e-2)
@@ -423,6 +429,10 @@ int main(int argc, char** argv)
 	        pTot_vs_Xpos_overlay[step1][step2]->SetMaximum(60);
 	        pTot_vs_Xpos_overlay[step1][step2]->SetMinimum(-5);
 		pTot_vs_Xpos_overlay[step1][step2]->Fill(x_dut, tot[iCh]/1.e3);
+
+		pTot_vs_Ypos_overlay[step1][step2]->SetMaximum(60);
+                pTot_vs_Ypos_overlay[step1][step2]->SetMinimum(-5);
+                pTot_vs_Ypos_overlay[step1][step2]->Fill(y_dut, tot[iCh]/1.e3);
 	      }
 	  }
         
@@ -441,13 +451,17 @@ int main(int argc, char** argv)
     TCanvas *cTots_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cTots_scan_correction[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
-    TCanvas *cEff_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cYpos_scan[NSTEP1][NSTEP2][NCH];
+    TCanvas *cEff_scanX[NSTEP1][NSTEP2][NCH];
+    TCanvas *cEff_scanY[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalkOverlay_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cCrossTalk12away_corr[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_over_scan;
+    TCanvas *cYpos_over_scan;
 
     cXpos_over_scan = new TCanvas (Form("cXpos_over"), Form("cXpos_over"), 800, 400);
+    cYpos_over_scan = new TCanvas (Form("cYpos_over"), Form("cYpos_over"), 800, 400);
 
     // now draw all the histograms, again have step 1, step 2, channel loop - step 1 is the overvoltage, step 2 is the threshold
     for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
@@ -585,7 +599,6 @@ int main(int argc, char** argv)
 		// making plots for the x position of the device under test (x_dut)
 		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cXpos_scan[iStep1][iStep2][iCh]->cd();
-
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
                 pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
@@ -595,14 +608,32 @@ int main(int argc, char** argv)
 		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
                 cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
+		cYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+                cYpos_scan[iStep1][iStep2][iCh]->cd();
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(REBIN_COEFF);
+		pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Y position");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
+		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
+                cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+
 		// efficiency plots
-		cEff_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cEff_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cEff__ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
-		cEff_scan[iStep1][iStep2][iCh]->cd();
+		cEff_scanX[iStep1][iStep2][iCh] = new TCanvas (Form("cEffx_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cEffx__ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+		cEff_scanX[iStep1][iStep2][iCh]->cd();
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(2);
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("X position");
 		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Within MIP Peak Energy");
-		cEff_scan[iStep1][iStep2][iCh]->SaveAs(Form("cEff_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		cEff_scanX[iStep1][iStep2][iCh]->SaveAs(Form("cEffx_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+
+		cEff_scanY[iStep1][iStep2][iCh] = new TCanvas (Form("cEffy_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cEffy__ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+                cEff_scanY[iStep1][iStep2][iCh]->cd();
+                pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Rebin(2);
+                pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+                pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Y position");
+                pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Within MIP Peak Energy");
+                cEff_scanY[iStep1][iStep2][iCh]->SaveAs(Form("cEffy_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 		// need to find the center of the efficiency plot for one channel - use a specific fit function - this is done later in overlay plots in channel / bar loop
 
 		// plots for overlay of x position 
@@ -612,9 +643,16 @@ int main(int argc, char** argv)
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetMarkerColor(6);
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("X position");
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("tot [ns]");
+
+		cYpos_over_scan->cd();
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetRange(-5,70);
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetMarkerColor(6);
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("Y position");
+                pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetTitle("tot [ns]");
             }
           cXpos_over_scan->SaveAs(Form("pTot_vs_Xpos_overlay_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
-            
+	  cYpos_over_scan->SaveAs(Form("pTot_vs_Ypos_overlay_step1_%.1f_step2_%.1f.pdf", step1_vct.at(iStep1), step2_vct.at(iStep2)));
         }
     }
     
@@ -630,6 +668,14 @@ int main(int argc, char** argv)
     hPosX->Draw();
     hPosX->GetXaxis()->SetTitle("beam X pos [mm]");
     hPosX->GetYaxis()->SetTitle("Counts");        
+    gPad->SetLogy();
+
+    TCanvas * cBeamPosY = new TCanvas ("cBeamPosY", "cBeamPosY", 500, 500);
+    cBeamPosY->cd();
+    hPosY->Rebin(2);
+    hPosY->Draw();
+    hPosY->GetXaxis()->SetTitle("beam Y pos [mm]");
+    hPosY->GetYaxis()->SetTitle("Counts");
     gPad->SetLogy();
 
     TCanvas * cArrayTots = new TCanvas ("cArrayTots", "cArrayTots", 1600, 300);
@@ -703,24 +749,35 @@ int main(int argc, char** argv)
       }
     cArrayEdepXY->SaveAs(Form("XY_scatter_all.pdf"));
 
-    TCanvas * cArrayEff = new TCanvas("cArrayEff","cArrayEff", 1600, 300);
-    cArrayEff->Divide(NBARS,2);
+    TCanvas * cArrayEffx = new TCanvas("cArrayEffx","cArrayEffx", 1600, 300);
+    TCanvas * cArrayEffy = new TCanvas("cArrayEffy","cArrayEffy", 1600, 300);
+    cArrayEffx->Divide(NBARS,2);
+    cArrayEffy->Divide(NBARS,2);
     for (int chId = 0; chId<NBARS*2; chId++)
       {
 	// normalize the efficiency plots
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(2);
+	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(2);
         for (int iBin = 0; iBin < 200; iBin++)
 	  {
             if (hPosX->GetBinContent(iBin+1)>0) pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetBinContent(iBin+1, pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinContent(iBin+1)/hPosX->GetBinContent(iBin+1) );
+	    if (hPosY->GetBinContent(iBin+1)>0) pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetBinContent(iBin+1, pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinContent(iBin+1)/hPosY->GetBinContent(iBin+1) );
 	  }
-	cArrayEff->cd(chId+1);
-        //pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Rebin(2);
+	cArrayEffx->cd(chId+1);
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,1,"Y"); // set Y range
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,30,"X"); // set X range
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetStats(0); // no stats box for the efficiency plots
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("X position");
         pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("Efficiency within MIP Peak Energy");
+
+	cArrayEffy->cd(chId+1);
+	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,1,"Y"); // set Y range
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetAxisRange(0,30,"X"); // set X range
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetStats(0); // no stats box for the efficiency plots  
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("Y position");
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetTitle("Efficiency within MIP Peak Energy");
       }
 
     TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
@@ -737,25 +794,33 @@ int main(int argc, char** argv)
     pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("X position");
     pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Efficiency within MIP Peak Energy");
 
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->Draw();
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Y position");
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Efficiency within MIP Peak Energy");
+
     // then go over all the bars
     for (int chId = 0; chId<NBARS; chId++)
       {
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(chId+1);
+	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(chId+1);
 	fitBarPos->SetLineColor(chId+1);
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
+	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
 	fitBarPos->SetParameter(0, 4 + chId*3.);
 	for (int i = 0; i< 3; i++) 
 	  {
 	    pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
+	    //	    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
 	  }
         float posBar   = fitBarPos->GetParameter(0);
         float widthBar = fitBarPos->GetParameter(1);
         float effBar   = fitBarPos->GetParameter(3);
         float trackRes = fitBarPos->GetParameter(4);
-	std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+	std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl; // printing for x position of bars currently
 	if (chId == NBARS - 1)
 	  {
-	    cArrayEff->SaveAs(Form("Efficiency_array_barId%.3d.pdf", chId));
+	    cArrayEffx->SaveAs(Form("Efficiency_array_barId%.3d.pdf", chId));
+	    cArrayEffy->SaveAs(Form("Efficiency_array_barId%.3d.pdf", chId));
 	    cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_barId%.3d.pdf", chId));
 	  }
       }

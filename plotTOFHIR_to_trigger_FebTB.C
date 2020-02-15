@@ -166,12 +166,18 @@ int main(int argc, char** argv)
     #define NCH 400
 
     // these are from the board mapping on the google sheet tab for Feb11 and before. May change Feb12 and after
+    // this is for configuration 2, 3 (connector was rotated wrong), 4, or 5
+    // conf 6 and 8 have the horizontal array as the low channel numbers
     //    int myChList[] = {0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32}; // from channelMapping1 in mtd drawMatrices.cfg, VERTICAL
     //    int myChList1[] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19}; // one side from channelMapping1
     //    int myChList2[] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // one side from channelMapping1
-    int myChList[] = {57,63,50,60,59,55,61,56,58,53,62,54,9,51,38,52,34,43,33,42,36,44,35,46,37,45,39,47,41,48,40,49}; // channelMapping2 HORIZONTAL
-    int myChList1[] = {57,50,59,61,58,62,9,38,34,33,36,35,37,39,41,40}; // one side from channelMapping2, totalEnergy[0]
-    int myChList2[] = {63,60,55,56,53,54,51,52,43,42,44,46,45,47,48,49}; // one side from channelMapping2, totalEnergy[1]
+    //    int myChList[] = {57,63,50,60,59,55,61,56,58,53,62,54,9,51,38,52,34,43,33,42,36,44,35,46,37,45,39,47,41,48,40,49}; // channelMapping2 HORIZONTAL
+    //    int myChList1[] = {57,50,59,61,58,62,9,38,34,33,36,35,37,39,41,40}; // one side from channelMapping2, totalEnergy[0]
+    //    int myChList2[] = {63,60,55,56,53,54,51,52,43,42,44,46,45,47,48,49}; // one side from channelMapping2, totalEnergy[1]
+    // mapping for the pin connector array, caltech array
+    int myChList[] = {57,63,60,50,59,55,61,56,58,53,62,54,32,51,38,52,34,43,33,42,36,44,35,46,37,45,39,47,41,48,40,49}; // VERTICAL
+    int myChList1[] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
+    int myChList2[] = {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
     int NBARS = 16; // full array has 16 bars, 32 SiPM readouts
     double center[NCH];
     double MIP[NCH];
@@ -179,236 +185,245 @@ int main(int argc, char** argv)
     double MIP_corr[NCH];
     double IC_corr[NCH];
 
-    // center of bar x position, HORIZONTAL
-    center[57] = center[63] = center[50] = center[60] = center[59] = center[55] = center[61] = center[56] = center[58] = center[53] = center[62] = center[54] = center[9] = center[51] = center[38] = center[52] = center[34] = center[43] = center[33] = center[42] = center[36] = center[44] = center[35] = center[46] = center[37] = center[45] = center[39] = center[47] = center[41] = center[48] = center[40] = center[49] = 17;    
 
-    // list MIP peak energies based off of Landau fit, this is for v5 recomstruction, second array commented out
-    MIP[57] = MIP[63] = MIP[50] = MIP[60] = MIP[59] = MIP[55] = MIP[61] = MIP[56] = MIP[58] = MIP[53] = MIP[62] = MIP[54] = MIP[9] = MIP[51] = MIP[38] = MIP[52] = MIP[34] = MIP[43] = MIP[33] = MIP[42] = MIP[36] = MIP[44] = MIP[35] = MIP[46] = MIP[37] = MIP[45] = MIP[39] = MIP[47] = MIP[41] = MIP[48] = MIP[40] = MIP[49] = 140;
+    // center of bar x position
+    center[63] = center[40] = 0;
+    center[57] = center[49] = 2;
+    center[60] = center[41] = 4;
+    center[50] = center[48] = 6;
+    center[55] = center[39] = 9;
+    center[59] = center[47] = 12;
+    center[56] = center[37] = 16;
+    center[61] = center[45] = 19;
+    center[53] = center[35] = 22;
+    center[58] = center[46] = 26;
+    center[54] = center[36] = 29;
+    center[62] = center[44] = 32;
+    center[51] = center[33] = 33;
+    center[9] = center[42] = 36;
+    center[52] = center[34] = 39;
+    center[38] = center[43] = 41;
 
-// list MIP peak energies based off of Landau fit, this is for v5 recomstruction - using Landau to CORRECTED TOT, second array
-    MIP_corr[57] = MIP_corr[63] = MIP_corr[50] = MIP_corr[60] = MIP_corr[59] = MIP_corr[55] = MIP_corr[61] = MIP_corr[56] = MIP_corr[58] = MIP_corr[53] = MIP_corr[62] = MIP_corr[54] = MIP_corr[9] = MIP_corr[51] = MIP_corr[38] = MIP_corr[52] = MIP_corr[34] = MIP_corr[43] = MIP_corr[33] = MIP_corr[42] = MIP_corr[36] = MIP_corr[44] = MIP_corr[35] = MIP_corr[46] = MIP_corr[37] = MIP_corr[45] = MIP_corr[39] = MIP_corr[47] = MIP_corr[41] = MIP_corr[48] = MIP_corr[40] = MIP_corr[49] = 180;
+    // list MIP peak energies based off of Landau fit, this is for v5 recomstruction
+    MIP[57] = MIP[63] = MIP[50] = MIP[60] = MIP[59] = MIP[55] = MIP[61] = MIP[56] = MIP[58] = MIP[53] = MIP[62] = MIP[54] = MIP[9] = MIP[51] = MIP[38] = MIP[52] = MIP[34] = MIP[43] = MIP[33] = MIP[42] = MIP[36] = MIP[44] = MIP[35] = MIP[46] = MIP[37] = MIP[45] = MIP[39] = MIP[47] = MIP[41] = MIP[48] = MIP[40] = MIP[49] = 200;
+
+// list MIP peak energies based off of Landau fit, this is for v5 recomstruction - using Landau to CORRECTED TOT
+    MIP_corr[57] = MIP_corr[63] = MIP_corr[50] = MIP_corr[60] = MIP_corr[59] = MIP_corr[55] = MIP_corr[61] = MIP_corr[56] = MIP_corr[58] = MIP_corr[53] = MIP_corr[62] = MIP_corr[54] = MIP_corr[9] = MIP_corr[51] = MIP_corr[38] = MIP_corr[52] = MIP_corr[34] = MIP_corr[43] = MIP_corr[33] = MIP_corr[42] = MIP_corr[36] = MIP_corr[44] = MIP_corr[35] = MIP_corr[46] = MIP_corr[37] = MIP_corr[45] = MIP_corr[39] = MIP_corr[47] = MIP_corr[41] = MIP_corr[48] = MIP_corr[40] = MIP_corr[49] = 80;
 
 // calculate intercallibration coefficients
- double avgMIP = 140; //(MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
+ double avgMIP = 200; //(MIP[128] + MIP[132] + MIP[134] + MIP[136] + MIP[138] + MIP[140] + MIP[142]) / 7;
 
  // calculate intercallibration coefficients   
- double avgMIP_corr = 180; // (MIP_corr[128] + MIP_corr[132] + MIP_corr[134] + MIP_corr[136] + MIP_corr[138] + MIP_corr[140] + MIP_corr[142]) / 7;
+ double avgMIP_corr = 80; // (MIP_corr[128] + MIP_corr[132] + MIP_corr[134] + MIP_corr[136] + MIP_corr[138] + MIP_corr[140] + MIP_corr[142]) / 7;
 
  for (int iCh= 0; iCh < NCH; iCh++)
    { 
      IC[iCh] = MIP[iCh] / avgMIP;
      IC_corr[iCh] = MIP_corr[iCh] / avgMIP_corr;
    }
-   
-    // declare the histograms, these will be filled in the channel loop    
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_correction;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut_correction;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hTime;
-    std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
-    std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Xpos; 
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Ypos;
-    std::map<float, std::map<float, std::map<int, TH2F * > > > pXpos_Ypos_Tot;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
-    std::map<float, std::map<float, TProfile * > > pTot_vs_Xpos_overlay;
-    std::map<float, std::map<float, TProfile * > > pTot_vs_Ypos_overlay;
-    std::map<float, std::map<float, std::map<int, TProfile2D * > > > pXY_Edep;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalk;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar1away;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar2away;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalk_corr;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar_corr;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar1away_corr;
-    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar2away_corr;
+ 
+ // declare the histograms, these will be filled in the channel loop    
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_correction;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hTot_cut_correction;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hTime;
+ std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Xpos;
+ std::map<float, std::map<float, std::map<int, TProfile * > > > pTot_vs_Ypos;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Xpos; 
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pEff_vs_Ypos;
+ std::map<float, std::map<float, std::map<int, TH2F * > > > pXpos_Ypos_Tot;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > hCTR_UD;
+ std::map<float, std::map<float, TProfile * > > pTot_vs_Xpos_overlay;
+ std::map<float, std::map<float, TProfile * > > pTot_vs_Ypos_overlay;
+ std::map<float, std::map<float, std::map<int, TProfile2D * > > > pXY_Edep;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalk;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar1away;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar2away;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalk_corr;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar_corr;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar1away_corr;
+ std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkBar2away_corr;
+ 
+ //    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkOverlay;
 
-    //    std::map<float, std::map<float, std::map<int, TH1F * > > > pCrossTalkOverlay;
+ TH1F * hPosX = new TH1F ("hPosX", "hPosX", 200, minXpos, maxXpos);
+ TH1F * hPosY = new TH1F ("hPosY", "hPosY", 200, minYpos, maxYpos);
+ 
+ // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
+ for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
+   {
+     for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
+       {
+	 for (int iCh = 0; iCh < NCH; iCh++)
+	   {       
+	     hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+	     hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_corr_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold corrected, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+	     hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+	     hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_corr_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold corrected with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
+	     hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time Hist, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
+	     pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+	     pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
+	     pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxXpos);
+	     pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxYpos);
+	     pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
+	     
+	     pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
+	     pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar2away_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 2 away (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     
+	     //cross talk with corrected tot
+	     pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	     pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar2away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 2 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
+	   }
 
-    TH1F * hPosX = new TH1F ("hPosX", "hPosX", 200, minXpos, maxXpos);
-    TH1F * hPosY = new TH1F ("hPosY", "hPosY", 200, minYpos, maxYpos);
+	 pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
+	 pTot_vs_Ypos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Ypos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
+
+	 // bar loop (outside of channel loop) to define time resolution for a single bar
+	 for (int iBar = 0; iBar < NBARS; iBar++)
+	   {
+	     hCTR_UD[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iBar] = new TH1F (Form("hCTR_UD_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Bar Time Res, UD_ch%.3d, step1_%.1f, step2_%.1f", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, -1000, 1000 );
+	   }                       
+       }
+   }
     
-    // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
-    for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
-      {
-        for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
-	  {
-            for (int iCh = 0; iCh < NCH; iCh++)
-	      {       
-		hTot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
-		hTot_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_corr_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold corrected, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
-		hTot_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
-		hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTot_cut_corr_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time over threshold corrected with x cut, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTot, maxTot );
-		hTime[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hTime_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Time Hist, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minTime, maxTime );
-		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
-		pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
-		pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxXpos);
-		pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxYpos);
-		pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
+ //define more histos...               
+ //TH2F * hTotTimeWalk  = new TH2F ("hAmpTimeWalk", "hAmpTimeWalk", 1000, -5, 5, 4000, -6000, 6000);
+ //TProfile * pTotTimeWalk  = new TProfile ("pAmpTimeWalk", "pAmpTimeWalk", 1000, -5, 5);
+ 
+ //************************************************************************************//
+ //              loop 0
+ //************************************************************************************//
+ 
+ std::cout << "(0) looping over events to get MIP peak position" << std::endl;
+ for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
+   {
+     //std::cout << "processing event before 1 MIP req "<< iEvt<< std::endl;
+     tree->GetEntry(iEvt);
+     if (ntracks != 1) continue; // require 1 MIP per event
+     if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
+     //	if (step1!=6) continue;
+     //hCTR[step1][step2]->Fill(time2-time1);
+     long long time_ref = time[384];
+     hPosX->Fill(x_dut);
+     hPosY->Fill(y_dut);
+     // channel loop to calculate total energy deposit
+     double TotalEnergy[2] = {0};
+     double TotalEnergy_corr[2] = {0};
+     double corrected_tot[NCH] = {0}; // initialize the corrected_tot for each channel to 0 at the start of each event loop
+     for (int iCh = 0; iCh<NCH; iCh++)
+       {
+	 // if not one of channels that we care about, skip it
+	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	 // want to find the total energy in the event, in any channel
+	 if ( tot[iCh] < -100 ) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999)	 
+	 // corrected energy given the correction to the tot linearization
+	 corrected_tot[iCh] = 14.13 * (exp(0.01562 * (tot[iCh]/1.e3))-1);
+	 // define total energy separately for the top and bottom half of the bars. TotalEnergy[0] = even, TotalEnergy[1] = odd channels
+	 if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) {
+	   TotalEnergy[0] += (tot[iCh]/1.e3) / IC[iCh];
+	   TotalEnergy_corr[0] += corrected_tot[iCh] / IC_corr[iCh];
+	 }
+	 if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) {
+	   TotalEnergy[1] += (tot[iCh]/1.e3) / IC[iCh];
+	   TotalEnergy_corr[1] += corrected_tot[iCh] / IC_corr[iCh];
+	 }
+       }
+     // channel loop in the event loop
+     for (int iCh = 0; iCh<NCH; iCh++)
+       {
+	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	 //if (iCh%2 == 1 ) continue;
+	 //if (step1 != 6) continue;
+	 //if (step2 != 0) continue;
+	 
+	 hTot[step1][step2][iCh]->Fill(tot[iCh]/1.e3);
+	 hTot_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+	 pXpos_Ypos_Tot[step1][step2][iCh]->Fill(x_dut, y_dut);
+	 hTime[step1][step2][iCh]->Fill(time[iCh] - time_ref);
+	 
+	 // calculate the cross talk, and plot this
+	 // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
+	 
+	 if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
+	   if (TotalEnergy[0] < 2000 && tot[iCh]/1.e3 > 5 && tot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
+	     {
+	       pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
+	       pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
+	     }
+	 }
+	 if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) { // then use TotalEnergy[1]
+	   if (TotalEnergy[1] < 2000 && tot[iCh]/1.e3 > 5 && tot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
+	     {
+	       pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
+	       pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );
+	     }
+	 }
+	 
+	 // cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
+	 // do this for each channel, based off of the stats found from the fit to the efficiency plots
+	 // for the cross talk (green plot) cut around the MIP position requring signal in the central bar to be 0.85*MIP - 4*MIP
+	 // MIP and x_dut cut should be redundant actually
+	 if (x_dut < center[iCh]+1 && x_dut > center[iCh]-1 ) // horizontal bars, use y_dut TO DO
+	   {
+	     hTot_cut[step1][step2][iCh]->Fill(tot[iCh]/1.e3);
+	     hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
+	     
+	     if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
+	       if (TotalEnergy[0] < 2000 && tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh]) {
+		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
+		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
+	       }
+	     }
+	     if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) { // then use TotalEnergy[1]
+	       if (TotalEnergy[1] < 2000 && tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh]) {
+		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
+		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );	 
+	       }
+	     }
+	   } // closing loop based on position cut
 
-		pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
-		pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-		pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-		pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-		pCrossTalkBar2away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar2away_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 2 away (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-
-		//cross talk with corrected tot
-		pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-		pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-		pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-                pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar2away_corr_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 2 away (with bar cut, corrected tot) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
-	      }
-
-	    pTot_vs_Xpos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Xpos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. X pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minXpos, maxXpos );
-	    pTot_vs_Ypos_overlay[step1_vct.at(iStep1)][step2_vct.at(iStep2)] = new TProfile (Form("pTot_vs_Ypos_over_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos overlay, step1_%.1f, step2_%.1f", step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
-
-	    // bar loop (outside of channel loop) to define time resolution for a single bar
-            for (int iBar = 0; iBar < NBARS; iBar++)
-	      {
-		hCTR_UD[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iBar] = new TH1F (Form("hCTR_UD_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Bar Time Res, UD_ch%.3d, step1_%.1f, step2_%.1f", iBar, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, -1000, 1000 );
-	      }                       
-        }
-    }
-    
-    //define more histos...               
-    //TH2F * hTotTimeWalk  = new TH2F ("hAmpTimeWalk", "hAmpTimeWalk", 1000, -5, 5, 4000, -6000, 6000);
-    //TProfile * pTotTimeWalk  = new TProfile ("pAmpTimeWalk", "pAmpTimeWalk", 1000, -5, 5);
-    
-    //************************************************************************************//
-    //              loop 0
-    //************************************************************************************//
-
-    std::cout << "(0) looping over events to get MIP peak position" << std::endl;
-    for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
-      {
-	//std::cout << "processing event before 1 MIP req "<< iEvt<< std::endl;
-	tree->GetEntry(iEvt);
-	if (ntracks != 1) continue; // require 1 MIP per event
-	if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
-	//	if (step1!=6) continue;
-	//hCTR[step1][step2]->Fill(time2-time1);
-	long long time_ref = time[384];
-	hPosX->Fill(x_dut);
-	hPosY->Fill(y_dut);
-	// channel loop to calculate total energy deposit
-	double TotalEnergy[2] = {0};
-	double TotalEnergy_corr[2] = {0};
-	double corrected_tot[NCH] = {0}; // initialize the corrected_tot for each channel to 0 at the start of each event loop
-	for (int iCh = 0; iCh<NCH; iCh++)
-	  {
-	    // if not one of channels that we care about, skip it
-	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
-	    // want to find the total energy in the event, in any channel
-	    //std::cout << "energy " << tot[iCh] << " for channel " << iCh << std::endl;
-	    if ( tot[iCh] < -100 ) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999)
-
-	    // corrected energy given the correction to the tot linearization
-	    corrected_tot[iCh] = 14.13 * (exp(0.01562 * (tot[iCh]/1.e3))-1);
-	    // define total energy separately for the top and bottom half of the bars. TotalEnergy[0] = even, TotalEnergy[1] = odd channels
-	    if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) {
-	      TotalEnergy[0] += (tot[iCh]/1.e3) / IC[iCh];
-	      TotalEnergy_corr[0] += corrected_tot[iCh] / IC_corr[iCh];
-	    }
-            if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) {
-	      TotalEnergy[1] += (tot[iCh]/1.e3) / IC[iCh];
-	      TotalEnergy_corr[1] += corrected_tot[iCh] / IC_corr[iCh];
-	    }
-	  }
-	// channel loop in the event loop
-	for (int iCh = 0; iCh<NCH; iCh++)
-	  {
-	    if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
-	    //if (iCh%2 == 1 ) continue;
-	    //if (step1 != 6) continue;
-	    //if (step2 != 0) continue;
-
-	    hTot[step1][step2][iCh]->Fill(tot[iCh]/1.e3);
-	    hTot_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
-	    pXpos_Ypos_Tot[step1][step2][iCh]->Fill(x_dut, y_dut);
-	    hTime[step1][step2][iCh]->Fill(time[iCh] - time_ref);
-
-	    // calculate the cross talk, and plot this
-	    // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
-	    // if no energy recorded, TotalEnergy[iCh%2] = 0, ignore this case for the cross talk calculation
-
-	    if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
-	      if (TotalEnergy[0] < 2000 && tot[iCh]/1.e3 > 5 && tot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
-		{
-		  pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
-		  pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
-		}
-	    }
-	    if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) { // then use TotalEnergy[1]
-	      if (TotalEnergy[1] < 2000 && tot[iCh]/1.e3 > 5 && tot[iCh]/1.e3< 400) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
-	      {
-		pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
-                pCrossTalk_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );
-	      }
-	    }
-
-	    // cut on a specific bar to see how this affects MIP peak (expect to pick out Landau peak for one bar) 
-	    // do this for each channel, based off of the stats found from the fit to the efficiency plots
-	    // for the cross talk (green plot) cut around the MIP position requring signal in the central bar to be 0.85*MIP - 4*MIP
-	    // MIP and x_dut cut should be redundant actually
-	    if (x_dut < center[iCh]+1 && x_dut > center[iCh]-1 ) // horizontal bars, use y_dut TO DO
-	      {
-		hTot_cut[step1][step2][iCh]->Fill(tot[iCh]/1.e3);
-		hTot_cut_correction[step1][step2][iCh]->Fill(corrected_tot[iCh]);
-		
-		if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
-		  if (TotalEnergy[0] < 2000 && tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh]) {
-		    pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
-		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
-		  }
-		}
-		if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) { // then use TotalEnergy[1]
-		  if (TotalEnergy[1] < 2000 && tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh]) {
-		    pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
-		    pCrossTalkBar_corr[step1][step2][iCh]->Fill((corrected_tot[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );	 
-		  }
-		}
-	      } // closing loop based on position cut
-
-	    // fill the 1 bar away cross talk for ch 35, 46
-	    int xtalkchannel = 0;
-	    if ( (x_dut < center[iCh]+1 && x_dut > center[iCh]-1) && ( iCh == 36 || iCh == 37 || iCh == 44 || iCh == 45 ) )
-	      {
-		// put a MIP cut on the bar +-1 away from 35,46
-		if (tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh] ) // no totalEnergy cut since already require non-zero tot on this side of array
-		  {
-		    if (iCh < 40) {
-		      xtalkchannel = 35; // what channel we consider cross talk in  
-		      pCrossTalkBar1away[step1][step2][xtalkchannel]->Fill(((tot[xtalkchannel]/1.e3) / IC[xtalkchannel] ) / TotalEnergy[0] );
-		      // separate out for channel +- 1 away to see if these have different distributions
-		      pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[xtalkchannel] / IC_corr[xtalkchannel] )  / TotalEnergy_corr[0] );
-		    }
-		    if (iCh > 40) {
-		      xtalkchannel = 46;
-		      pCrossTalkBar1away[step1][step2][xtalkchannel]->Fill(((tot[xtalkchannel]/1.e3) / IC[xtalkchannel] ) / TotalEnergy[1] );
-		      pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[xtalkchannel] / IC_corr[xtalkchannel] )  / TotalEnergy_corr[1] );
-		    }
-		  }
-	      }
-	    // fill the 2 bars away cross talk for ch 35,46
-            if ( (x_dut < center[iCh]+1 && x_dut > center[iCh]-1) && ( iCh == 33 || iCh == 37 || iCh == 42 || iCh == 47 ) )
-	      {
-		// put a MIP cut on the bar +-2 away from 35,46
-		if (tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh] )
-		  {
-		    if (iCh < 40) {
-		      xtalkchannel = 35; // what channel we consider cross talk in
-		      pCrossTalkBar2away[step1][step2][xtalkchannel]->Fill(((tot[xtalkchannel]/1.e3) / IC[xtalkchannel] ) / TotalEnergy[0] );
-		      pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot[xtalkchannel] / IC_corr[xtalkchannel] )  / TotalEnergy_corr[0] );
-		    }
-		    if (iCh > 40) {
-		      xtalkchannel = 46;
-		      pCrossTalkBar1away[step1][step2][xtalkchannel]->Fill(((tot[xtalkchannel]/1.e3) / IC[xtalkchannel] ) / TotalEnergy[1] );
-		      pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[xtalkchannel] / IC_corr[xtalkchannel] )  / TotalEnergy_corr[1] );
-		    }
-		  }
-	      }
-
+	 // fill the 1 bar away cross talk for channels. Restrict to only consider ones that are not right on the edge
+	 int xtalkchannel = 0;
+	 int ChList1Pos = -100;
+	 int ChList2Pos = -100;
+	 // for cross talk analysis, iCh is where cross talk hit is originating from, and xtalkch = myChList1[ChList1Pos+-1] is the channel we care about xtalk in (this is what is plotted on final overlay distributions)
+	 for (int ListPos = 0; ListPos < 16; ListPos++ ) // find which position in myChList we are in
+	   {
+	     if (iCh == myChList1[ListPos]) ChList1Pos = ListPos;
+	     if (iCh == myChList2[ListPos]) ChList2Pos = ListPos;
+	   }
+	 if  (x_dut < center[iCh]+1 && x_dut > center[iCh]-1 ) 
+	   {
+	     // put a MIP cut on the bar +-1 away from iCh of interest
+	     if (tot[iCh]/1.e3 > 0.85*MIP[iCh] && tot[iCh]/1.e3<4*MIP[iCh] ) // no totalEnergy cut since already require non-zero tot on this side of array
+	       {
+		 if ( ChList1Pos > 1 && ChList1Pos < 14 ) {
+		   pCrossTalkBar1away[step1][step2][myChList1[ChList1Pos-1]]->Fill(((tot[myChList1[ChList1Pos-1]]/1.e3) / IC[myChList1[ChList1Pos-1]] ) / TotalEnergy[0] );
+		   pCrossTalkBar1away[step1][step2][myChList1[ChList1Pos+1]]->Fill(((tot[myChList1[ChList1Pos+1]]/1.e3) / IC[myChList1[ChList1Pos+1]] ) / TotalEnergy[0] );
+		   // separate out for channel +- 1 away to see if these have different distributions. Using third index as iCh = myChList1[ChList1Pos] instead of myChList1[ChList1Pos-1] inorder to separate out x talk from neighboring +-1 bars. When plotting need to associate to which channel this is x talking to
+		   pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList1[ChList1Pos-1]] / IC_corr[myChList1[ChList1Pos-1]] )  / TotalEnergy_corr[0] );
+		   pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList1[ChList1Pos+1]] / IC_corr[myChList1[ChList1Pos+1]] )  / TotalEnergy_corr[0] );
+		   pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList1[ChList1Pos-2]] / IC_corr[myChList1[ChList1Pos-2]] )  / TotalEnergy_corr[0] );
+		   pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList1[ChList1Pos+2]] / IC_corr[myChList1[ChList1Pos+2]] )  / TotalEnergy_corr[0] );
+		 }
+		 if ( ChList2Pos > 1 && ChList2Pos < 14 ) {
+		   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos-1]]->Fill(((tot[myChList2[ChList2Pos-1]]/1.e3) / IC[myChList2[ChList2Pos-1]] ) / TotalEnergy[1] );
+		   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos+1]]->Fill(((tot[myChList2[ChList2Pos+1]]/1.e3) / IC[myChList2[ChList2Pos+1]] ) / TotalEnergy[1] );
+		   pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList2[ChList2Pos-1]] / IC_corr[myChList2[ChList2Pos-1]] )  / TotalEnergy_corr[1] );
+		   pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList2[ChList2Pos+1]] / IC_corr[myChList2[ChList2Pos+1]] )  / TotalEnergy_corr[1] );
+		   pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList2[ChList2Pos-2]] / IC_corr[myChList2[ChList2Pos-2]] )  / TotalEnergy_corr[1] );
+		   pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((corrected_tot[myChList2[ChList2Pos+2]] / IC_corr[myChList2[ChList2Pos+2]] )  / TotalEnergy_corr[1] );
+		 }
+	       }
+	   } // closing loop of x_dut over center iCh
+	 
 	    //	    if (tot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
 	    pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, tot[iCh]/1.e3);
 	    pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, tot[iCh]/1.e3);
@@ -474,7 +489,6 @@ int main(int argc, char** argv)
                 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
       		//if (step1_vct.at(iStep1) !=6) continue;
 		//if (step2_vct.at(iStep2) !=0) continue;
-		std::cout<< "step1, step2 " << step1_vct.at(iStep1) << step2_vct.at(iStep2) << std::endl;
 
                 cTots_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cTots_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
                 cTots_scan[iStep1][iStep2][iCh]->cd();            
@@ -545,56 +559,57 @@ int main(int argc, char** argv)
                 gPad->SetLogy();
                 cCrossTalkOverlay_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalkOverlay_corr_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
-		int iChr1 = 0;
-		int iChl1 = 0;
-		int iChr2 = 0;
-		int iChl2 = 0;
-		if (iCh == 35 || iCh == 46 )
+		int ChList1Pos = -100;
+		int ChList2Pos = -100;
+		for (int ListPos = 0; ListPos < 16; ListPos++ )
 		  {
-		    cCrossTalk12away_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
-                    cCrossTalk12away_corr[iStep1][iStep2][iCh]->cd();
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
-                    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
-		    if (iCh == 35)
-		      {
-			iChr1 = 37;
-			iChl1 = 36;
-			iChr2 = 39;
-			iChl2 = 33;
-		      }
-		    if (iCh == 46)
-		      {
-			iChr1 = 45;
-			iChr1 = 44;
-			iChr1 = 47;
-			iChr1 = 42;
-		      }
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl1]->SetLineColor(kRed+1); // left
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr1]->SetLineColor(kRed-7); // right
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl1]->Draw("same");
-                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr1]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl2]->SetLineColor(kMagenta+3);
-		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr2]->SetLineColor(kMagenta-4);
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl2]->Draw("same");
-                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr2]->Draw("same");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
-                    pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
-                    gPad->SetLogy();
-		    cCrossTalk12away_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk12away%.3d_corr_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
-		    TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.84 ); // for array 2
-		    TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.25 );
-		    TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.25 );
-		    TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.08 );
-		    TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.08 );
-		    pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen, "QRL");
-		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr1]->Fit(fitGausRedr, "QRL");
-		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl1]->Fit(fitGausRedl, "QRL");
-		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr2]->Fit(fitGausPurpler, "QRL");
-		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl2]->Fit(fitGausPurplel, "QRL");
-
-		    std::cout << "fractional energy ch " << iCh << " :" << fitGausGreen->GetParameter(1) << " fractional energy 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
+		    if (iCh == myChList1[ListPos]) ChList1Pos = ListPos;
+		    if (iCh == myChList2[ListPos]) ChList2Pos = ListPos;
 		  }
+		if (ChList1Pos > 1 || ChList1Pos < 14 || ChList2Pos > 1 || ChList2Pos < 14) {
+		  cCrossTalk12away_corr[iStep1][iStep2][iCh] = new  TCanvas (Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cCrossTalk12away%.3d_corr_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
+		  cCrossTalk12away_corr[iStep1][iStep2][iCh]->cd();
+		  pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw();
+		  pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->SetLineColor(kGreen+2);
+		  pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Draw("same");
+		  if (ChList1Pos > -1) {
+		    std::cout << "making plot with cross talk 1 and 2 away" << std::endl;
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos-1]]->SetLineColor(kRed+1); // left                         
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos+1]]->SetLineColor(kRed-7); // right
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos-1]]->Draw("same");
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos+1]]->Draw("same");
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos-2]]->SetLineColor(kMagenta+3);
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos+2]]->SetLineColor(kMagenta-4);
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos-2]]->Draw("same");
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList1[ChList1Pos+2]]->Draw("same");
+		  }
+		  if (ChList2Pos > -1 ) {
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos-1]]->SetLineColor(kRed+1); // left
+		    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos+1]]->SetLineColor(kRed-7); // right         
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos-1]]->Draw("same");
+                    pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos+1]]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos-2]]->SetLineColor(kMagenta+3);
+		    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos+2]]->SetLineColor(kMagenta-4);
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos-2]]->Draw("same");
+                    pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][myChList2[ChList2Pos+2]]->Draw("same");
+                  }
+		  pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Fractional energy deposit (corrected)");
+		  pCrossTalk_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("Events");
+		  gPad->SetLogy();
+		  cCrossTalk12away_corr[iStep1][iStep2][iCh]->SaveAs(Form("crosstalk12away%.3d_corr_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
+		  TF1 * fitGausGreen = new TF1 ("fitGausGreen", "gaus", 0.6, 0.84 ); // for array 2
+		  TF1 * fitGausRedr = new TF1 ("fitGausRedr", "gaus", 0.03, 0.25 );
+		  TF1 * fitGausRedl = new TF1 ("fitGausRedl", "gaus", 0.03, 0.25 );
+		  TF1 * fitGausPurpler = new TF1 ("fitGausPurpler", "gaus", 0.01, 0.08 );
+		  TF1 * fitGausPurplel = new TF1 ("fitGausPurplel", "gaus", 0.01, 0.08 );
+		  pCrossTalkBar_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGausGreen, "QRL");
+		  //		  pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr1]->Fit(fitGausRedr, "QRL");
+		  //		  pCrossTalkBar1away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl1]->Fit(fitGausRedl, "QRL");
+		  //		  pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChr2]->Fit(fitGausPurpler, "QRL");
+		  //		  pCrossTalkBar2away_corr[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iChl2]->Fit(fitGausPurplel, "QRL");
+		  //		std::cout << "fractional energy ch " << iCh << " :" << fitGausGreen->GetParameter(1) << " fractional energy 1 away (l,r): " << fitGausRedl->GetParameter(1) << " and " << fitGausRedr->GetParameter(1) << " fractional energy 2 away (l,r): " << fitGausPurplel->GetParameter(1) << " and " << fitGausPurpler->GetParameter(1) << std::endl;
+		}
+
 
 		// making plots for the x position of the device under test (x_dut)
 		cXpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cXpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
@@ -787,30 +802,23 @@ int main(int argc, char** argv)
     fitBarPos->SetParLimits(1, 2, 4);
     fitBarPos->SetParLimits(3, 0.2, 1.);
 
-    TCanvas *cArrayEffOverlay = new TCanvas("cArrayEffOverlay","cArrayEffOverlay",800,400);
-    cArrayEffOverlay->cd();
+    TCanvas *cArrayEffOverlayX = new TCanvas("cArrayEffOverlayX","cArrayEffOverlayX",800,400);
+    cArrayEffOverlayX->cd();
     // look at just one channel first
     pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->Draw();
     pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("X position");
     pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Efficiency within MIP Peak Energy");
 
-    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->Draw();
-    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Y position");
-    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Efficiency within MIP Peak Energy");
-
     // then go over all the bars
     for (int chId = 0; chId<NBARS; chId++)
       {
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(chId+1);
-	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(chId+1);
 	fitBarPos->SetLineColor(chId+1);
 	pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
-	pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
 	fitBarPos->SetParameter(0, 4 + chId*3.);
 	for (int i = 0; i< 3; i++) 
 	  {
 	    pEff_vs_Xpos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
-	    //	    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
 	  }
         float posBar   = fitBarPos->GetParameter(0);
         float widthBar = fitBarPos->GetParameter(1);
@@ -819,11 +827,38 @@ int main(int argc, char** argv)
 	std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl; // printing for x position of bars currently
 	if (chId == NBARS - 1)
 	  {
-	    cArrayEffx->SaveAs(Form("Efficiency_array_barId%.3d.pdf", chId));
-	    cArrayEffy->SaveAs(Form("Efficiency_array_barId%.3d.pdf", chId));
-	    cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_barId%.3d.pdf", chId));
+	    cArrayEffx->SaveAs(Form("EfficiencyX_array_barId%.3d.pdf", chId));
+	    cArrayEffOverlayX->SaveAs(Form("EfficiencyX_array_overlay_barId%.3d.pdf", chId));
 	  }
       }
+
+    TCanvas *cArrayEffOverlayY = new TCanvas("cArrayEffOverlayY","cArrayEffOverlayY",800,400);
+    cArrayEffOverlayY->cd();
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->Draw();
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Y position");
+    pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[0]]->SetTitle("Efficiency within MIP Peak Energy");
+    for (int chId = 0; chId<NBARS; chId++)
+      {
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(chId+1);
+	fitBarPos->SetLineColor(chId+1);
+        pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
+        fitBarPos->SetParameter(0, 4 + chId*3.);
+        for (int i = 0; i< 3; i++)
+          {
+            pEff_vs_Ypos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");                                                                                         
+          }
+        float posBar   = fitBarPos->GetParameter(0);
+        float widthBar = fitBarPos->GetParameter(1);
+        float effBar   = fitBarPos->GetParameter(3);
+        float trackRes = fitBarPos->GetParameter(4);
+	std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl; // printing for x position of bars currently                                                                                                                                                                                                           
+	if (chId == NBARS - 1)
+	  {
+	    cArrayEffy->SaveAs(Form("EfficiencyY_array_barId%.3d.pdf", chId));
+	    cArrayEffOverlayY->SaveAs(Form("EfficiencyY_array_overlay_barId%.3d.pdf", chId));
+	  }
+      }
+
 
     int selBar = 5;
     int selBarCh = selBar*2+128;

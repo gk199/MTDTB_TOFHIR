@@ -45,6 +45,11 @@
 
 int main(int argc, char** argv)
 {
+  // open the file that important things are written to
+  std::ofstream myfile;
+  myfile.open ("example.txt");
+  myfile << "Saving bar position and MPV from the lambda fit." << std::endl;
+
     gROOT->SetBatch(true);
     TApplication* theApp = new TApplication("App", &argc, argv);
     //TLegend *leg;
@@ -326,12 +331,12 @@ int main(int argc, char** argv)
      double TotalEnergy[2] = {0};
      double TotalEnergy_corr[2] = {0};
      double corrected_tot[NCH] = {0}; // initialize the corrected_tot for each channel to 0 at the start of each event loop
-     for (int iCh = 0; iCh<NCH; iCh++)
+     for (int iCh = 0; iCh<NCH; iCh++) // channel loop to calculate total energy per event, per side of the array (top half or bottom half)
        {
 	 // if not one of channels that we care about, skip it
 	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
 	 // want to find the total energy in the event, in any channel
-	 if ( (tot[iCh] < -100) || (energy[iCh] < -100)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot 
+	 if ( (tot[iCh] < -100) || (energy[iCh] < -100) || (qfine[iCh] <= 13)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot 
 	 corrected_tot[iCh] = 14.13 * (exp(0.01562 * (tot[iCh]/1.e3))-1); // corrected energy given the correction to the tot linearization         
 
 	 // define total energy separately for the top and bottom half of the bars. TotalEnergy[0] = even, TotalEnergy[1] = odd channels
@@ -352,7 +357,7 @@ int main(int argc, char** argv)
 	 //if (step1 != 6) continue;
 	 //if (step2 != 0) continue;
 	 
-	 hTot[step1][step2][iCh]->Fill(tot[iCh]/1.e3);
+	 hTot[step1][step2][iCh]->Fill(tot[iCh]/1.e3); // raw ToT information, no cuts
 	 hTot_correction[step1][step2][iCh]->Fill(energy[iCh]); // cut out low region where energy and tot are non-linear with each other
 	 pXpos_Ypos_Tot[step1][step2][iCh]->Fill(x_dut, y_dut);
 	 hTime[step1][step2][iCh]->Fill(time[iCh] - time_ref);
@@ -364,6 +369,9 @@ int main(int argc, char** argv)
 	   if ((TotalEnergy[0] < 4000) && (tot[iCh]/1.e3 > 5) && (tot[iCh]/1.e3 < 500) && (energy[iCh] > -1)) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots. Energy > -1 to make sure event is good since used for cross talk plots
 	     {
 	       pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
+	     }
+	   if ((TotalEnergy_corr[0] < 4000) && (qfine[iCh]>13) && (energy[iCh] > -1) )
+	     {
 	       pCrossTalk_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
 	     }
 	 }
@@ -371,6 +379,9 @@ int main(int argc, char** argv)
 	   if ((TotalEnergy[1] < 4000) && (tot[iCh]/1.e3 > 5) && (tot[iCh]/1.e3 < 500) && (energy[iCh] > -1)) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots
 	     {
 	       pCrossTalk[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
+	     }
+	   if ((TotalEnergy_corr[1] < 4000) && (qfine[iCh]>13)&& (energy[iCh] > -1) )
+	     {
 	       pCrossTalk_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );
 	     }
 	 }
@@ -387,13 +398,17 @@ int main(int argc, char** argv)
 	     if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
 	       if ((TotalEnergy[0] < 4000) && (tot[iCh]/1.e3 > 0.85*MIP[iCh]) && (tot[iCh]/1.e3<4*MIP[iCh])) {
 		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
-		 if (energy[iCh] > -1) pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
+	       }
+	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related
+		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
 	       }
 	     }
 	     if (std::find(std::begin(myChList2), std::end(myChList2), iCh) == std::end(myChList2) ) { // then use TotalEnergy[1]
 	       if ((TotalEnergy[1] < 4000) && (tot[iCh]/1.e3 > 0.85*MIP[iCh]) && (tot[iCh]/1.e3<4*MIP[iCh])) {
 		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
-		 if (energy[iCh] > -1) pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] );	 
+	       }
+	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
+		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] ); 
 	       }
 	     }
 	   } // closing loop based on position cut
@@ -416,66 +431,69 @@ int main(int argc, char** argv)
 		 if ( ChList1Pos > 1 && ChList1Pos < 14 ) {
 		   pCrossTalkBar1away[step1][step2][myChList1[ChList1Pos-1]]->Fill(((tot[myChList1[ChList1Pos-1]]/1.e3) / IC[myChList1[ChList1Pos-1]] ) / TotalEnergy[0] );
 		   pCrossTalkBar1away[step1][step2][myChList1[ChList1Pos+1]]->Fill(((tot[myChList1[ChList1Pos+1]]/1.e3) / IC[myChList1[ChList1Pos+1]] ) / TotalEnergy[0] );
-		   // separate out for channel +- 1 away to see if these have different distributions. Using third index as iCh = myChList1[ChList1Pos] instead of myChList1[ChList1Pos-1] inorder to separate out x talk from neighboring +-1 bars. When plotting need to associate to which channel this is x talking to
-		   if (energy[iCh] > -1 ) {
-		     pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos-1]] / IC_corr[myChList1[ChList1Pos-1]] )  / TotalEnergy_corr[0] );
-		     pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos+1]] / IC_corr[myChList1[ChList1Pos+1]] )  / TotalEnergy_corr[0] );
-		     pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos-2]] / IC_corr[myChList1[ChList1Pos-2]] )  / TotalEnergy_corr[0] );
-		     pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos+2]] / IC_corr[myChList1[ChList1Pos+2]] )  / TotalEnergy_corr[0] );
-		   }
 		 }
 		 if ( ChList2Pos > 1 && ChList2Pos < 14 ) {
-		   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos-1]]->Fill(((tot[myChList2[ChList2Pos-1]]/1.e3) / IC[myChList2[ChList2Pos-1]] ) / TotalEnergy[1] );
-		   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos+1]]->Fill(((tot[myChList2[ChList2Pos+1]]/1.e3) / IC[myChList2[ChList2Pos+1]] ) / TotalEnergy[1] );
-		   if (energy[iCh] > -1) {
-		     pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos-1]] / IC_corr[myChList2[ChList2Pos-1]] )  / TotalEnergy_corr[1] );
-		     pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos+1]] / IC_corr[myChList2[ChList2Pos+1]] )  / TotalEnergy_corr[1] );
-		     pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos-2]] / IC_corr[myChList2[ChList2Pos-2]] )  / TotalEnergy_corr[1] );
-		     pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos+2]] / IC_corr[myChList2[ChList2Pos+2]] )  / TotalEnergy_corr[1] );
-		   }
+                   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos-1]]->Fill(((tot[myChList2[ChList2Pos-1]]/1.e3) / IC[myChList2[ChList2Pos-1]] ) / TotalEnergy[1] );
+                   pCrossTalkBar1away[step1][step2][myChList2[ChList2Pos+1]]->Fill(((tot[myChList2[ChList2Pos+1]]/1.e3) / IC[myChList2[ChList2Pos+1]] ) / TotalEnergy[1] );
 		 }
+	       } // ToT MIP peak cut closing
+
+	     // Energy MIP peak cut: separate out for channel +- 1 away to see if these have different distributions. Using third index as iCh = myChList1[ChList1Pos] instead of myChList1[ChList1Pos-1] inorder to separate out x talk from neighboring +-1 bars. When plotting need to associate to which channel this is x talking to
+	     if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
+	       if (ChList1Pos > 1 && ChList1Pos < 14 ) {
+		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos-1]] / IC_corr[myChList1[ChList1Pos-1]] )  / TotalEnergy_corr[0] );
+		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos+1]] / IC_corr[myChList1[ChList1Pos+1]] )  / TotalEnergy_corr[0] );
+		 pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos-2]] / IC_corr[myChList1[ChList1Pos-2]] )  / TotalEnergy_corr[0] );
+		 pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos+2]] / IC_corr[myChList1[ChList1Pos+2]] )  / TotalEnergy_corr[0] );
 	       }
+	       if ( ChList2Pos > 1 && ChList2Pos < 14 ) {
+		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos-1]] / IC_corr[myChList2[ChList2Pos-1]] )  / TotalEnergy_corr[1] );
+		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos+1]] / IC_corr[myChList2[ChList2Pos+1]] )  / TotalEnergy_corr[1] );
+		 pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos-2]] / IC_corr[myChList2[ChList2Pos-2]] )  / TotalEnergy_corr[1] );
+		 pCrossTalkBar2away_corr[step1][step2][iCh]->Fill((energy[myChList2[ChList2Pos+2]] / IC_corr[myChList2[ChList2Pos+2]] )  / TotalEnergy_corr[1] );
+	       }
+	     }
 	   } // closing loop of x_dut over center iCh
 	 
-	    //	    if (tot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
-	    pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, tot[iCh]/1.e3);
-	    pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, tot[iCh]/1.e3);
-		
-	    // make efficiency plots - 1 if 0.9 - 3 * MIP energy, 0 otherwise
-	    if (x_dut != 0 && y_dut != 0)
-	      {
-		pXY_Edep[step1][step2][iCh]->Fill(x_dut, y_dut, tot[iCh]/1.e3);
-		if ((tot[iCh]/1.e3) >= 0.9 * MIP[iCh] && (tot[iCh]/1.e3) <= 3 * MIP[iCh] && x_dut > 0)
-		  {
-		    pEff_vs_Xpos[step1][step2][iCh]->Fill(x_dut, 1);
-		    pEff_vs_Ypos[step1][step2][iCh]->Fill(y_dut, 1);
-		  }
-	      }
-	    if (step1 > 1.e-2)
-	      {
-		// fill the overlay plot with the x position from each channel   
-	        pTot_vs_Xpos_overlay[step1][step2]->SetMaximum(60);
-	        pTot_vs_Xpos_overlay[step1][step2]->SetMinimum(-5);
-		pTot_vs_Xpos_overlay[step1][step2]->Fill(x_dut, tot[iCh]/1.e3);
-
-		pTot_vs_Ypos_overlay[step1][step2]->SetMaximum(60);
-                pTot_vs_Ypos_overlay[step1][step2]->SetMinimum(-5);
-                pTot_vs_Ypos_overlay[step1][step2]->Fill(y_dut, tot[iCh]/1.e3);
-	      }
-	  }
-        
-        for (int iBar = 0; iBar<NBARS; iBar++) // TO DO fix this for the new channel numbers
-        {
-            int chBarUp = iBar*2+128;
-            int chBarDown = iBar*2+129;
-            
-            if (tot[chBarUp]>130 && tot[chBarDown]>130 ) 
-            {
-                hCTR_UD[step1][step2][iBar]->Fill(time[chBarUp] - time[chBarDown]);                        
-            }
-        }
-    }
-    
+	 //	    if (tot[iCh] > 0. ) // needs more troubleshooting for this, why does it make the distributions so broad
+	 pTot_vs_Xpos[step1][step2][iCh]->Fill(x_dut, tot[iCh]/1.e3);
+	 pTot_vs_Ypos[step1][step2][iCh]->Fill(y_dut, tot[iCh]/1.e3);
+	 
+	 // make efficiency plots - 1 if 0.9 - 3 * MIP energy, 0 otherwise
+	 if (x_dut != 0 && y_dut != 0)
+	   {
+	     pXY_Edep[step1][step2][iCh]->Fill(x_dut, y_dut, tot[iCh]/1.e3);
+	     if ((tot[iCh]/1.e3) >= 0.9 * MIP[iCh] && (tot[iCh]/1.e3) <= 3 * MIP[iCh] && x_dut > 0)
+	       {
+		 pEff_vs_Xpos[step1][step2][iCh]->Fill(x_dut, 1);
+		 pEff_vs_Ypos[step1][step2][iCh]->Fill(y_dut, 1);
+	       }
+	   }
+	 if (step1 > 1.e-2)
+	   {
+	     // fill the overlay plot with the x position from each channel   
+	     pTot_vs_Xpos_overlay[step1][step2]->SetMaximum(60);
+	     pTot_vs_Xpos_overlay[step1][step2]->SetMinimum(-5);
+	     pTot_vs_Xpos_overlay[step1][step2]->Fill(x_dut, tot[iCh]/1.e3);
+	     
+	     pTot_vs_Ypos_overlay[step1][step2]->SetMaximum(60);
+	     pTot_vs_Ypos_overlay[step1][step2]->SetMinimum(-5);
+	     pTot_vs_Ypos_overlay[step1][step2]->Fill(y_dut, tot[iCh]/1.e3);
+	   }
+       } // closing channel loop
+     
+     for (int iBar = 0; iBar<NBARS; iBar++) // TO DO fix this for the new channel numbers
+       {
+	 int chBarUp = iBar*2+128;
+	 int chBarDown = iBar*2+129;
+         
+	 if (tot[chBarUp]>130 && tot[chBarDown]>130 ) 
+	   {
+	     hCTR_UD[step1][step2][iBar]->Fill(time[chBarUp] - time[chBarDown]);                        
+	   }
+       }
+   }// closing NEVENT loop
+ 
     TCanvas *cTots_scan[NSTEP1][NSTEP2][NCH];
     TCanvas *cTots_scan_correction[NSTEP1][NSTEP2][NCH];
     TCanvas *cXpos_scan[NSTEP1][NSTEP2][NCH];
@@ -548,6 +566,8 @@ int main(int argc, char** argv)
 		TF1 * fitLandau_corr = new TF1 ("fitLandau_corr","landau",MIP_corr[iCh]-3,MIP_corr[iCh]+10);
                 hTot_cut_correction[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitLandau_corr, "QRL");
 		std::cout << "Ch # " << iCh << " Landau fit on corrected tot normalization coeff: " << fitLandau_corr->GetParameter(0) << " most  probable value: " << fitLandau_corr->GetParameter(1) << " Lambda value: " << fitLandau_corr->GetParameter(2) << std::endl;
+		myfile << "Ch # " << iCh << " Landau fit on corrected tot normalization coeff: " << fitLandau_corr->GetParameter(0) << " most  probable value: " << fitLandau_corr->GetParameter(1) << " Lambda value: " << fitLandau_corr->GetParameter(2) << std::endl;
+
                 cTots_scan_correction[iStep1][iStep2][iCh]->SaveAs(Form("hTot_corr_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		// overlaying the cross talk with the cut on a certain bar
@@ -633,6 +653,8 @@ int main(int argc, char** argv)
 		TF1 * fitGaus = new TF1 ("fitGaus", "gaus", center[iCh]-2.5 , center[iCh]+2.5 ); 
 		pTot_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
 		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
+		myfile << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered" << std::endl;
+
                 cXpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Xpos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		cYpos_scan[iStep1][iStep2][iCh] = new TCanvas (Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("cYpos_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 800, 400);
@@ -642,7 +664,7 @@ int main(int argc, char** argv)
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetXaxis()->SetTitle("Y position");
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->GetYaxis()->SetTitle("tot [ns]");
                 pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]->Fit(fitGaus, "QRL");
-		std::cout << "xPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " x position centered " << std::endl;
+		std::cout << "yPos ch[" << iCh << "] = " << fitGaus->GetParameter(1) << " y position centered " << std::endl;
 		//                cYpos_scan[iStep1][iStep2][iCh]->SaveAs(Form("pTot_vs_Ypos_ch%.3d_step1_%.1f_step2_%.1f.pdf", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)));
 
 		// efficiency plots
@@ -901,5 +923,6 @@ int main(int argc, char** argv)
     
     std::cout << "end of program" << std::endl;
     theApp->Run();
+    myfile.close();
 
 }

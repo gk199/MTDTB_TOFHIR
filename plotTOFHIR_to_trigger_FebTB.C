@@ -187,29 +187,29 @@ int main(int argc, char** argv)
     int myChList1[] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
     int myChList2[] = {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
     int NBARS = 16; // full array has 16 bars, 32 SiPM readouts
-    double center[NCH];
-    double MIP[NCH];
-    double IC[NCH];
-    double MIP_corr[NCH];
-    double IC_corr[NCH];
+    double center[NCH] = {0};
+    double MIP[NCH] = {0};
+    double IC[NCH] = {0};
+    double MIP_corr[NCH] = {0}; // initialize these arrays to 0 and then only define values for the channels we are working with
+    double IC_corr[NCH] = {0};
 
     // center of bar x position, conf 9.1
     center[63] = center[40] = 0;
-    center[57] = center[49] = 0;
-    center[60] = center[41] = 0;
-    center[50] = center[48] = 3;
-    center[55] = center[39] = 1.9;// 4;
+    center[57] = center[49] = 1.2;
+    center[60] = center[41] = 1.2;
+    center[50] = center[48] = 1.1;
+    center[55] = center[39] = 2.4;
     center[59] = center[47] = 6;
-    center[56] = center[37] = 8.6; // 10;
-    center[61] = center[45] = 11.9; //12;
-    center[53] = center[35] = 15.1; //15;
-    center[58] = center[46] = 18.5; //19;
-    center[54] = center[36] = 21.6; // 23;
-    center[62] = center[44] = 24.9; // 26;
-    center[51] = center[33] = 28.2; // 30;
-    center[9] = center[42] = 31.6; // 33;
-    center[52] = center[34] = 39.3; // 35;
-    center[38] = center[43] = 40; // 38;
+    center[56] = center[37] = 8.4;
+    center[61] = center[45] = 11.9;
+    center[53] = center[35] = 15; 
+    center[58] = center[46] = 18.4;
+    center[54] = center[36] = 21.6;
+    center[62] = center[44] = 24.8;
+    center[51] = center[33] = 28.2;
+    center[9] = center[42] = 31.2; 
+    center[52] = center[34] = 34.3;
+    center[38] = center[43] = 37.9;
 
     // list MIP peak energies based off of Landau fit, this is for v1 reconstruction
     MIP[45] = MIP[56] = MIP[61] = 290;
@@ -218,27 +218,57 @@ int main(int argc, char** argv)
     MIP[36] = MIP[37] = 295;
     MIP[48] = MIP[52] = MIP[53] = MIP[54] = MIP[55] = MIP[62] = 310;
     MIP[9] = MIP[50] = 315;
-    MIP[40] = MIP[43] = MIP[63] = -1;
+    MIP[40] = MIP[43] = MIP[63] = 0; // these channels don't work
 
 // list MIP peak energies based off of Landau fit, this is for v5 recomstruction - using Landau to CORRECTED TOT
-    MIP_corr[33] = MIP_corr[57] = MIP_corr[60] = 10;
-    MIP_corr[9] = MIP_corr[34] = MIP_corr[44] = MIP_corr[46] = MIP_corr[47] = MIP_corr[51] = MIP_corr[54] = MIP_corr[58] = MIP_corr[59] = MIP_corr[62] = 12;
-    MIP_corr[50] = MIP_corr[52] = MIP_corr[53] = 12.5;
-    MIP_corr[35] = MIP[44] = 11.7;
-    MIP_corr[37] = 11.5;
+    MIP_corr[9] = 12.2;
+    MIP_corr[33] = 10.4;
+    MIP_corr[34] = 11.6;
+    MIP_corr[35] = 11.7;
+    MIP_corr[36] = 10.6;
+    MIP_corr[37] = 11.6;
+    MIP_corr[38] = 11; // no events when cut around this bar?? 
+    MIP_corr[39] = 11.1;
+    MIP_corr[41] = 10.9;
+    MIP_corr[42] = 11.1;
+    MIP_corr[44] = 11.6;
+    MIP_corr[45] = 11.1;
+    MIP_corr[46] = 11.6;
+    MIP_corr[47] = 11.9;
+    MIP_corr[48] = 11.2;
     MIP_corr[49] = 11.9;
-    MIP_corr[36] = MIP_corr[38] = MIP_corr[39] = MIP_corr[41] = MIP_corr[42] = MIP_corr[45] = MIP_corr[48] = MIP_corr[49] = MIP_corr[55] = MIP_corr[56] = MIP_corr[61] = 11;
-    MIP_corr[40] = MIP_corr[43] = MIP_corr[63] = -1;    
+    MIP_corr[50] = 12.0;
+    MIP_corr[51] = 12.0;
+    MIP_corr[52] = 12.5;
+    MIP_corr[53] = 12.7;
+    MIP_corr[54] = 12.6;
+    MIP_corr[55] = 12.5;
+    MIP_corr[56] = 11.2;
+    MIP_corr[57] = 12.1;
+    MIP_corr[58] = 12.2;
+    MIP_corr[59] = 12.1;
+    MIP_corr[60] = 10.3;
+    MIP_corr[61] = 11.1;
+    MIP_corr[62] = 12.8;
+
+    MIP_corr[40] = MIP_corr[43] = MIP_corr[63] = 0; // these channels don't work
 
     // calculate intercallibration coefficients
-    double avgMIP = (MIP[57] + MIP[50] + MIP[60] + MIP[59] + MIP[55] + MIP[61] + MIP[56] + MIP[58] + MIP[53] + MIP[62] + MIP[54] + MIP[9] + MIP[51] + MIP[38] + MIP[52] + MIP[34] + MIP[33] + MIP[42] + MIP[36] + MIP[44] + MIP[35] + MIP[46] + MIP[37] + MIP[45] + MIP[39] + MIP[47] + MIP[41] + MIP[48] + MIP[49]) / (32-3); // -3 to account for 3 dead channels
-    double avgMIP_corr = (MIP_corr[57] + MIP_corr[50] + MIP_corr[60] + MIP_corr[59] + MIP_corr[55] + MIP_corr[61] + MIP_corr[56] + MIP_corr[58] + MIP_corr[53] + MIP_corr[62] + MIP_corr[54] + MIP_corr[9] + MIP_corr[51] + MIP_corr[38] + MIP_corr[52] + MIP_corr[34] + MIP_corr[33] + MIP_corr[42] + MIP_corr[36] + MIP_corr[44] + MIP_corr[35] + MIP_corr[46] + MIP_corr[37] + MIP_corr[45] + MIP_corr[39] + MIP_corr[47] + MIP_corr[41] + MIP_corr[48] + MIP_corr[49]) / (32-3); // -3 to account for 3 dead channels 
+    double avgMIP = 0;
+    double avgMIP_corr = 0;
+    for (int iCh = 0; iCh < NCH; iCh++) 
+      {
+	avgMIP += MIP[iCh];
+	avgMIP_corr += MIP_corr[iCh];
+      }
+    avgMIP = avgMIP / 29; // we have 29 active channels!!
+    avgMIP_corr = avgMIP_corr / 29;
 
- for (int iCh= 0; iCh < NCH; iCh++)
-   { 
-     IC[iCh] = MIP[iCh] / avgMIP;
-     IC_corr[iCh] = MIP_corr[iCh] / avgMIP_corr;
-   }
+    for (int iCh= 0; iCh < NCH; iCh++)
+      { 
+	IC[iCh] = MIP[iCh] / avgMIP;
+	IC_corr[iCh] = MIP_corr[iCh] / avgMIP_corr;
+      }
  
  // declare the histograms, these will be filled in the channel loop    
  std::map<float, std::map<float, std::map<int, TH1F * > > > hTot;
@@ -353,6 +383,7 @@ int main(int argc, char** argv)
      for (int iCh = 0; iCh<NCH; iCh++) // channel loop in the event loop
        {
 	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
+	 if ( (tot[iCh] < -100) || (energy[iCh] < -100) || (qfine[iCh] <= 13)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot
 	 //if (iCh%2 == 1 ) continue;
 	 //if (step1 != 6) continue;
 	 //if (step2 != 0) continue;
@@ -364,7 +395,6 @@ int main(int argc, char** argv)
 	 
 	 // calculate the cross talk, and plot this
 	 // plot Tot, normalized by MIP peak energy, and then as a fraction of the total energy deposited in all channels
-	 
 	 if (std::find(std::begin(myChList1), std::end(myChList1), iCh) == std::end(myChList1) ) { // then use TotalEnergy[0]
 	   if ((TotalEnergy[0] < 4000) && (tot[iCh]/1.e3 > 5) && (tot[iCh]/1.e3 < 500) && (energy[iCh] > -1)) // tot>5 for a zero supression from low energy deposits, no cut around MIP peak, this is blue on the cross talk plots. Energy > -1 to make sure event is good since used for cross talk plots
 	     {
@@ -399,7 +429,7 @@ int main(int argc, char** argv)
 	       if ((TotalEnergy[0] < 4000) && (tot[iCh]/1.e3 > 0.85*MIP[iCh]) && (tot[iCh]/1.e3<4*MIP[iCh])) {
 		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[0] );
 	       }
-	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related
+	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related
 		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[0] );
 	       }
 	     }
@@ -407,7 +437,7 @@ int main(int argc, char** argv)
 	       if ((TotalEnergy[1] < 4000) && (tot[iCh]/1.e3 > 0.85*MIP[iCh]) && (tot[iCh]/1.e3<4*MIP[iCh])) {
 		 pCrossTalkBar[step1][step2][iCh]->Fill(((tot[iCh]/1.e3) / IC[iCh] )  / TotalEnergy[1] );
 	       }
-	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
+	       if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
 		 pCrossTalkBar_corr[step1][step2][iCh]->Fill((energy[iCh] / IC_corr[iCh] )  / TotalEnergy_corr[1] ); 
 	       }
 	     }
@@ -439,7 +469,7 @@ int main(int argc, char** argv)
 	       } // ToT MIP peak cut closing
 
 	     // Energy MIP peak cut: separate out for channel +- 1 away to see if these have different distributions. Using third index as iCh = myChList1[ChList1Pos] instead of myChList1[ChList1Pos-1] inorder to separate out x talk from neighboring +-1 bars. When plotting need to associate to which channel this is x talking to
-	     if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (tot[iCh]/1.e3 > 150 ) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
+	     if ((energy[iCh] > 0.85*MIP_corr[iCh]) && (energy[iCh] < 4*MIP_corr[iCh]) && (qfine[iCh] > 13)) { // energy MIP peak cut, but exclusing low tot region where tot vs. energy is inversely related 
 	       if (ChList1Pos > 1 && ChList1Pos < 14 ) {
 		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos-1]] / IC_corr[myChList1[ChList1Pos-1]] )  / TotalEnergy_corr[0] );
 		 pCrossTalkBar1away_corr[step1][step2][iCh]->Fill((energy[myChList1[ChList1Pos+1]] / IC_corr[myChList1[ChList1Pos+1]] )  / TotalEnergy_corr[0] );
@@ -891,7 +921,7 @@ int main(int argc, char** argv)
 	  }
       }
 
-
+    /*
     int selBar = 5;
     int selBarCh = selBar*2+128;
 
@@ -904,7 +934,8 @@ int main(int argc, char** argv)
     pXY_Edep[step1_vct.at(selStep1)][step2_vct.at(selStep2)][selBarCh]->GetZaxis()->SetTitle("Mean Tot [ns]");
     pXY_Edep[step1_vct.at(selStep1)][step2_vct.at(selStep2)][selBarCh]->GetXaxis()->SetRangeUser(0, 30);
     pXY_Edep[step1_vct.at(selStep1)][step2_vct.at(selStep2)][selBarCh]->GetYaxis()->SetRangeUser(10, 40);
-    cSingleScatterEdep->SaveAs(Form("XY_xcatter.pdf"));
+    cSingleScatterEdep->SaveAs(Form("XY_scatter.pdf"));
+    */
 
     TF1 * fitTestMyFunc = new TF1 ("fitTestMyFunc", fitBarEffErr, -20, 20, 5);
     fitTestMyFunc->SetParameters(10., 3., 0.0, 0.8, 0.2);

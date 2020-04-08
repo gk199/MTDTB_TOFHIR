@@ -2,13 +2,17 @@
 
 Analysis code for the SiPM array FNAL testbeams. To compile,
 
+    cmsenv
     g++ -Wall -o plotTOFHIR_to_trigger plotTOFHIR_to_trigger.C functions.hh `root-config --cflags --glibs` -lSpectrum
     g++ -Wall -o plotTOFHIR_to_trigger_FebTB plotTOFHIR_to_trigger_FebTB.C functions.hh `root-config --cflags --glibs` -lSpectrum
+    g++ -Wall -o plotTOFHIR_to_triggerFebTBv2 plotTOFHIR_to_trigger_FebTB_v2.C functions_v2.cc `root-config --cflags --glibs` -lSpectrum
 
 and to run,
 
     ./plotTOFHIR_to_trigger <first run number> <last run number> <path to data>
     ./plotTOFHIR_to_trigger_FebTB <first run number> <last run number> <path to data>
+    ./plotTOFHIR_to_triggerFebTBv2 <first run number> <last run number>
+    ./plotTOFHIR_to_triggerFebTBv2 24702 24712
 
 ## June Testbeam Details
 Data from the June 2019 FNAL Testbeam is stored in 

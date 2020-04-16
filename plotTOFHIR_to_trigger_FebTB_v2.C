@@ -87,7 +87,7 @@ int main(int argc, char** argv)
       lastRun= atoi(argv[2]);
     }
   
-  std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Feb2020/TOFHIR/RecoData/v1/RecoWithTracks/";
+  std::string data_path = "/eos/cms/store/group/dpg_mtd/comm_mtd/TB/MTDTB_FNAL_Feb2020/TOFHIR/RecoData/v2/RecoWithTracks/";
   //    std::string data_path = "../data_TB/";  
   if (argc > 3) 
     {
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
   std::string output_plot_folder = "../plots";
   int selStep1     = 0;
   int selStep2     = 0;
-  int selBarNumber = 8;
+  int selBarNumber = 6;//8;
   
   
   // define tree
@@ -211,13 +211,19 @@ int main(int argc, char** argv)
   //    int myChTop[] = {57,50,59,61,58,62,9,38,34,33,36,35,37,39,41,40}; // one side from channelMapping2, totalEnergy[0]
   //    int myChBot[] = {63,60,55,56,53,54,51,52,43,42,44,46,45,47,48,49}; // one side from channelMapping2, totalEnergy[1]
   
-  
+  /*
   // mapping for the pin connector array, caltech array
   int myChList[32] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
 		      40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
-  
   int myChTop[16] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
   int myChBot[16] = {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
+  */
+  // mapping for milano array, flex cable connected
+  int myChList[32] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3,
+		      25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
+  int myChTop[16] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3};
+  int myChBot[16] = {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
+
   bool HORIZONTAL = true;
   
   int NBARS = 16; // full array has 16 bars, 32 SiPM readouts
@@ -298,8 +304,8 @@ int main(int argc, char** argv)
 	      hEff_vs_Y[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh]  = new TH1F (Form("hEff_vs_Ypos_%s", this_caption.c_str()), Form("Efficiency vs. Y pos %s", this_title.c_str()), NBINPOS, minYpos, maxYpos);            
 	      hEff_vs_XY[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("hEff_vs_XY_%s", this_caption.c_str()), Form("Efficiency vs X-Y %s", this_title.c_str()), NBINPOS, minXpos, maxXpos, NBINPOS, minYpos, maxYpos );
 	      
-	      hXT[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_%s", this_caption.c_str()), Form("Cross Talk  %s", this_title.c_str()), 400, 0, 1);
-	      hXT_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_%s", this_caption.c_str()), Form("Cross Talk  %s", this_title.c_str()), 400, 0, 1);
+	      hXT[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_%s", this_caption.c_str()), Form("Cross Talk %s", this_title.c_str()), 400, 0, 1);
+	      hXT_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_%s", this_caption.c_str()), Form("Cross Talk %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_ln[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_ln_%s", this_caption.c_str()), Form("Cross Talk ln bar %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_lln[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_lln_%s", this_caption.c_str()), Form("Cross Talk lln bar %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_rn[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_rn_%s", this_caption.c_str()), Form("Cross Talk rn bar %s", this_title.c_str()), 400, 0, 1);
@@ -708,7 +714,39 @@ int main(int argc, char** argv)
   cEfficiency_vsPosZoom->cd(2);
   this_histo_bot->Draw();
   cEfficiency_vsPosZoom->SaveAs(Form("Efficiency vs. X Position, Center Bar.pdf"));
+
+  // fitting function for efficiency plots
+  TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
+  fitBarPos->SetParameters(5., 3., 0.01, 0.8, 0.2);
+  fitBarPos->SetNpx(5000);
+  fitBarPos->SetParLimits(0, minXpos, maxXpos);
+  fitBarPos->SetParLimits(1, 2, 4);
+  fitBarPos->SetParLimits(3, 0.2, 500.);
  
+  TCanvas *cArrayEffOverlay = new TCanvas("cArrayEffOverlay","cArrayEffOverlay",800,400);
+  cArrayEffOverlay->cd();
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->GetYaxis()->SetRange(0,500);
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->Draw();
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->SetTitle("Efficiency within MIP Peak Energy");
+  for (int chId = 0; chId<NBARS; chId++)
+    {
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetLineColor(chId+1);
+      fitBarPos->SetLineColor(chId+1);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetYaxis()->SetRange(0,500);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Draw("same");
+      fitBarPos->SetParameter(0, chId*3.);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
+      float posBar   = fitBarPos->GetParameter(0);
+      float widthBar = fitBarPos->GetParameter(1);
+      float effBar   = fitBarPos->GetParameter(3);
+      float trackRes = fitBarPos->GetParameter(4);
+      std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      if (chId == NBARS - 1)
+	{
+	  cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_barId%.3d.pdf", chId));
+	}
+    }
+
   //     double center[NCH] = {0};
    
   //************************************************************************************//
@@ -746,6 +784,8 @@ int main(int argc, char** argv)
 	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5)
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
+	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;
+	      //	      if (in_me < 0.6) std::cout << "energy in central: " << energy[myChList[chId]] << " energy in l,r: " << energy[myChList[chId-1]] << ", " << energy[myChList[chId+1]] << std::endl;
 	      hXT_cut_ln[step1][step2][myChList[chId]]->Fill(in_my_ln);
 	      hXT_cut_rn[step1][step2][myChList[chId]]->Fill(in_my_rn);
 	    }                          
@@ -786,10 +826,12 @@ int main(int argc, char** argv)
   for (int chId = 0; chId<NBARS*2; chId++)
     {
       cArrayXT->cd(chId+1);
+      /*
       hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw();
       hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetRangeUser(0,100);
-      hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("XT");
+      hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetXaxis()->SetTitle("Light Fraction");
       hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetYaxis()->SetTitle("Counts");
+      */
       
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(kGreen+2);
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetMarkerColor(kGreen+2);
@@ -843,12 +885,12 @@ int main(int argc, char** argv)
   TCanvas * cXTZoom = new TCanvas ("cXTZoom", "cXTZoom", 500, 800);
   cXTZoom->Divide(1, 2);
   cXTZoom->cd(1);
-  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   cXTZoom->cd(2);
-  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
@@ -1076,7 +1118,7 @@ int main(int argc, char** argv)
 	  hCTR_norm->Fill(IC[iBar]);
         }  
     }
-  cCTR_UDZoom->SaveAs(Form("Time in each Bar, Center Bar"));
+  cCTR_UDZoom->SaveAs(Form("Time in each Bar, Center Bar.pdf"));
   
   TCanvas * cCTR_UD_abs = new TCanvas ("cCTR_UD_abs", "cCTR_UD_abs", 600, 500);
   cCTR_UD_abs->cd();

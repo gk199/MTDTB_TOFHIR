@@ -99,7 +99,7 @@ int main(int argc, char** argv)
   std::string output_plot_folder = "../plots";
   int selStep1     = 0;
   int selStep2     = 0;
-  int selBarNumber = 6;//8;
+  int selBarNumber = 8;//6;
   
   
   // define tree
@@ -211,18 +211,26 @@ int main(int argc, char** argv)
   //    int myChTop[] = {57,50,59,61,58,62,9,38,34,33,36,35,37,39,41,40}; // one side from channelMapping2, totalEnergy[0]
   //    int myChBot[] = {63,60,55,56,53,54,51,52,43,42,44,46,45,47,48,49}; // one side from channelMapping2, totalEnergy[1]
   
-  /*
+ 
   // mapping for the pin connector array, caltech array
   int myChList[32] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
 		      40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
   int myChTop[16] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
   int myChBot[16] = {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
-  */
+  /*
   // mapping for milano array, flex cable connected
   int myChList[32] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3,
-		      25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
+  25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
   int myChTop[16] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3};
   int myChBot[16] = {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
+  */
+  int myChPos[NCH] = {0};
+  for (int iCh = 0; iCh < 16; iCh++)
+    {
+      myChPos[myChTop[iCh]] = 37-3*iCh;
+      myChPos[myChBot[iCh]] = 37-3*iCh;
+    }
+  //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;
   
@@ -721,21 +729,19 @@ int main(int argc, char** argv)
   fitBarPos->SetNpx(5000);
   fitBarPos->SetParLimits(0, minXpos, maxXpos);
   fitBarPos->SetParLimits(1, 2, 4);
-  fitBarPos->SetParLimits(3, 0.2, 500.);
+  fitBarPos->SetParLimits(3, 0.2, 700.);
  
   TCanvas *cArrayEffOverlay = new TCanvas("cArrayEffOverlay","cArrayEffOverlay",800,400);
   cArrayEffOverlay->cd();
-  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->GetYaxis()->SetRange(0,500);
-  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->Draw();
-  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[0]]->SetTitle("Efficiency within MIP Peak Energy");
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->SetTitle("Efficiency within MIP Peak Energy");
   for (int chId = 0; chId<NBARS; chId++)
     {
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetLineColor(chId+1);
       fitBarPos->SetLineColor(chId+1);
-      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetYaxis()->SetRange(0,500);
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Draw("same");
-      fitBarPos->SetParameter(0, chId*3.);
-      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitBarPos,"QR");
+      fitBarPos->SetParameter(0, 37-chId*3.);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Fit(fitBarPos,"QR");
       float posBar   = fitBarPos->GetParameter(0);
       float widthBar = fitBarPos->GetParameter(1);
       float effBar   = fitBarPos->GetParameter(3);
@@ -743,8 +749,30 @@ int main(int argc, char** argv)
       std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
       if (chId == NBARS - 1)
 	{
-	  cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_barId%.3d.pdf", chId));
+	  cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_Top.pdf"));
 	}
+    }
+
+  TCanvas *cArrayEffOverlay2 = new TCanvas("cArrayEffOverlay2","cArrayEffOverlay2",800,400);
+  cArrayEffOverlay2->cd();
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->SetTitle("Efficiency within MIP Peak Energy");
+  for (int chId = 0; chId<NBARS; chId++)
+    {
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetLineColor(chId+1);
+      fitBarPos->SetLineColor(chId+1);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Draw("same");
+      fitBarPos->SetParameter(0, 37-chId*3.);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Fit(fitBarPos,"QR");
+      float posBar   = fitBarPos->GetParameter(0);
+      float widthBar = fitBarPos->GetParameter(1);
+      float effBar   = fitBarPos->GetParameter(3);
+      float trackRes = fitBarPos->GetParameter(4);
+      std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      if (chId == NBARS - 1)
+        {
+          cArrayEffOverlay2->SaveAs(Form("Efficiency_array_overlay_Bot.pdf"));
+        }
     }
 
   //     double center[NCH] = {0};
@@ -781,7 +809,7 @@ int main(int argc, char** argv)
 	  //              std::cout << "in_me[" << chId << "] = " << in_me << std::endl;
 	  hXT[step1][step2][myChList[chId]]->Fill(in_me);
 	  
-	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5)
+	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5 && myChPos[myChList[chId]]-1.5 < xIntercept && xIntercept < myChPos[myChList[chId]]+1.5)  // restrict to the intercept must be in the bar of interest
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;

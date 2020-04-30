@@ -99,7 +99,6 @@ int main(int argc, char** argv)
   std::string output_plot_folder = "../plots";
   int selStep1     = 0;
   int selStep2     = 0;
-  int selBarNumber = 8;//6;
   
   
   // define tree
@@ -211,19 +210,29 @@ int main(int argc, char** argv)
   //    int myChTop[] = {57,50,59,61,58,62,9,38,34,33,36,35,37,39,41,40}; // one side from channelMapping2, totalEnergy[0]
   //    int myChBot[] = {63,60,55,56,53,54,51,52,43,42,44,46,45,47,48,49}; // one side from channelMapping2, totalEnergy[1]
   
- 
+
   // mapping for the pin connector array, caltech array
-  int myChList[32] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
-		      40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
-  int myChTop[16] = {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
-  int myChBot[16] = {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
-  /*
+  
+  int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
+		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
+		      // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
+		     // 40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
+    int myChTop[16] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63}; // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
+  int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
+  uint MIP_peak_low = 10; //2 for OV = 2
+  int selBarNumber = 7;
   // mapping for milano array, flex cable connected
-  int myChList[32] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3,
-  25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
-  int myChTop[16] = {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3};
-  int myChBot[16] = {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
+  /*
+  int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
+		      4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // VERTICAL
+// {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3,
+//  25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
+  int myChBot[16] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19}; // {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3};
+  int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
+  uint MIP_peak_low = 8; 
+  int selBarNumber = 9;
   */
+
   int myChPos[NCH] = {0};
   for (int iCh = 0; iCh < 16; iCh++)
     {
@@ -343,8 +352,10 @@ int main(int argc, char** argv)
       if (ntracks != 1) continue; // require 1 MIP per event
       
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
-      //	if (step1!=6) continue;      
-      
+      //      if (step1!=2) continue;       // this is Overvoltage 
+      //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
+      //     std::cout << "event = " << iEvt << std::endl;
+
       if (std::find(trk_blacklist->begin(), trk_blacklist->end(), double(x_dut)) != trk_blacklist->end() ) continue;
       
       long long time_ref = time[384];
@@ -357,7 +368,9 @@ int main(int argc, char** argv)
 	  if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;	  
 	  // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot, and 15<qfine<500, energy != 0,20,40,60	  
 	  if (!passBugEventCuts(iCh, energy, qfine, tot)) continue;
-	  
+	  //	  std::cout<< "passed bug event cuts! with qfine = " << qfine[iCh] << std::endl;
+	  //	  std::cout << "Step 1, 2 = " << step1 << ", " << step2 << " channel, energy, qfine, tot = " << iCh << ", " << energy[iCh] << ", " << qfine[iCh] << ", " << tot[iCh] << std::endl;
+
 	  //no cuts
 	  hTot[step1][step2][iCh]->Fill(tot[iCh]/1.e3); 
 	  hEnergy[step1][step2][iCh]->Fill(energy[iCh]);
@@ -374,7 +387,7 @@ int main(int argc, char** argv)
 	  
 	  // make efficiency plots
 	  //          if (my_signal >= 0.9 * MIP[iCh] && my_signal <= 3 * MIP[iCh] && xIntercept > 0)
-	  if (my_signal > 10 && my_signal < 100 && yIntercept > 0 && xIntercept > 0)
+	  if (my_signal > MIP_peak_low && my_signal < 100 && yIntercept > 0 && xIntercept > 0)
 	    {
 	      hEff_vs_X[step1][step2][iCh]->Fill(xIntercept, 1);
 	      hEff_vs_Y[step1][step2][iCh]->Fill(yIntercept, 1);
@@ -383,12 +396,12 @@ int main(int argc, char** argv)
 	      hEnergy_cut[step1][step2][iCh]->Fill(my_signal); // cut out low region where energy and tot are non-linear with each other
 	    }
 	}
-    }
-  
+     }
+
   // plotting first round of plots
   std::cout << std::endl;
   std::cout << "first set of plots" << std::endl;
-  
+
   TCanvas * cBeamPosX = new TCanvas ("cBeamPosX", "cBeamPosX", 500, 500);
   cBeamPosX->cd();
   hPosX->Rebin(2);
@@ -431,7 +444,7 @@ int main(int argc, char** argv)
   
   
   std::cout << "ICs" << std::endl;
-  
+
   double MIP_peak[NBARS*2] = {0};
   double MIP_peak_err[NBARS*2] = {0};
   double IC[NBARS*2] = {0};
@@ -695,7 +708,7 @@ int main(int argc, char** argv)
         {
 	  axis_label = "Y [mm]";
 	  this_histo = hEff_vs_Y[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]];
-        }        
+        }         
       this_histo->Draw();
       this_histo->GetXaxis()->SetRangeUser(0,100);
       this_histo->GetXaxis()->SetTitle(axis_label.c_str());        
@@ -725,11 +738,12 @@ int main(int argc, char** argv)
 
   // fitting function for efficiency plots
   TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
-  fitBarPos->SetParameters(5., 3., 0.01, 0.8, 0.2);
+  fitBarPos->SetParameters(5., 3.2, 0.01, 0.7, 0.3); // center, width, baseline, max, sigma_x
   fitBarPos->SetNpx(5000);
-  fitBarPos->SetParLimits(0, minXpos, maxXpos);
-  fitBarPos->SetParLimits(1, 2, 4);
-  fitBarPos->SetParLimits(3, 0.2, 700.);
+  fitBarPos->SetParLimits(0, minXpos-10, maxXpos-10);
+  fitBarPos->SetParLimits(1, 3.0, 3.4);
+  fitBarPos->SetParLimits(2, 0.0, 0.1);
+  fitBarPos->SetParLimits(3, 0.5, 1.);
  
   TCanvas *cArrayEffOverlay = new TCanvas("cArrayEffOverlay","cArrayEffOverlay",800,400);
   cArrayEffOverlay->cd();
@@ -737,10 +751,18 @@ int main(int argc, char** argv)
   hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->SetTitle("Efficiency within MIP Peak Energy");
   for (int chId = 0; chId<NBARS; chId++)
     {
-      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetLineColor(chId+1);
-      fitBarPos->SetLineColor(chId+1);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetLineColor(kRainBow + chId*3);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Rebin(2);
+      fitBarPos->SetLineColor(kRainBow + chId*3); //chId+1
+      for (int iBin = 0; iBin < NBINPOS; iBin++) // normalize the efficiency plots to 1
+	{
+	  if (hPosX->GetBinContent(iBin+1)>0) hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetBinContent(iBin+1, hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetBinContent(iBin+1)/hPosX->GetBinContent(iBin+1) );
+	}
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Draw("same");
-      fitBarPos->SetParameter(0, 37-chId*3.);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetAxisRange(0,1,"Y");
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetAxisRange(0,40,"X");
+      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 38-chId*3.2);
+      else fitBarPos->SetParameter(0, -10.8+chId*3.2);
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Fit(fitBarPos,"QR");
       float posBar   = fitBarPos->GetParameter(0);
       float widthBar = fitBarPos->GetParameter(1);
@@ -759,10 +781,18 @@ int main(int argc, char** argv)
   hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->SetTitle("Efficiency within MIP Peak Energy");
   for (int chId = 0; chId<NBARS; chId++)
     {
-      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetLineColor(chId+1);
-      fitBarPos->SetLineColor(chId+1);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetLineColor(kRainBow + chId*3);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Rebin(2);
+      fitBarPos->SetLineColor(kRainBow + chId*3);
+      for (int iBin = 0; iBin < NBINPOS; iBin++) // normalize the efficiency plots to 1       
+        {
+          if (hPosX->GetBinContent(iBin+1)>0) hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetBinContent(iBin+1, hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->GetBinContent(iBin+1)/hPosX->GetBinContent(iBin+1) );
+        }
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Draw("same");
-      fitBarPos->SetParameter(0, 37-chId*3.);
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetAxisRange(0,1,"Y");
+      hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetAxisRange(0,40,"X");
+      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 35-chId*3.2);
+      else fitBarPos->SetParameter(0, -10.8+chId*3.2);
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Fit(fitBarPos,"QR");
       float posBar   = fitBarPos->GetParameter(0);
       float widthBar = fitBarPos->GetParameter(1);
@@ -789,7 +819,9 @@ int main(int argc, char** argv)
     {
       tree->GetEntry(iEvt);
       if (ntracks != 1) continue; // require 1 MIP per event
-      
+      //      if (step1!=2) continue;       // this is Overvoltage   
+      //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
+
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
       //	if (step1!=6) continue;   
       if (std::find(trk_blacklist->begin(), trk_blacklist->end(), double(x_dut)) != trk_blacklist->end() ) continue;
@@ -809,7 +841,7 @@ int main(int argc, char** argv)
 	  //              std::cout << "in_me[" << chId << "] = " << in_me << std::endl;
 	  hXT[step1][step2][myChList[chId]]->Fill(in_me);
 	  
-	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5 && myChPos[myChList[chId]]-1.5 < xIntercept && xIntercept < myChPos[myChList[chId]]+1.5)  // restrict to the intercept must be in the bar of interest
+	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5 ) //&& myChPos[myChList[chId]]-1.5 < xIntercept && xIntercept < myChPos[myChList[chId]]+1.5)  // restrict to the intercept must be in the bar of interest
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;
@@ -877,7 +909,7 @@ int main(int argc, char** argv)
       //main bar
       float maxBin    = hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetMaximumBin();
       float maxCenter = hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinCenter(maxBin);        
-      TF1 * fitGaus = new TF1 ("fitGaus","gaus", 0.9*maxCenter, 1);
+      TF1 * fitGaus = new TF1 ("fitGaus","gaus", 0.93*maxCenter, 1);
       fitGaus->SetLineColor(kGreen+1);
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitGaus, "QRL");
       XT[chId] = fitGaus->GetParameter(1);        
@@ -913,12 +945,12 @@ int main(int argc, char** argv)
   TCanvas * cXTZoom = new TCanvas ("cXTZoom", "cXTZoom", 500, 800);
   cXTZoom->Divide(1, 2);
   cXTZoom->cd(1);
-  //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   cXTZoom->cd(2);
-  //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");

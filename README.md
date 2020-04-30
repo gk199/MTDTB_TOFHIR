@@ -13,6 +13,9 @@ and to run,
     ./plotTOFHIR_to_trigger_FebTB <first run number> <last run number> <path to data>
     ./plotTOFHIR_to_triggerFebTBv2 <first run number> <last run number>
     ./plotTOFHIR_to_triggerFebTBv2 24702 24712
+    ./plotTOFHIR_to_triggerFebTBv2 24713 24815
+
+The last two lines: Runs 24702-24712 are configuration 9.1 (wide beam, pin and flex array back to back) with OV = 6; 24713-24815 are configuration 9.1 with OV = 2 in some runs (need to require in code).
 
 ## June Testbeam Details
 Data from the June 2019 FNAL Testbeam is stored in 
@@ -43,4 +46,6 @@ Data from February 2020 FNAL Testbeam is stored in
 with plots [here](http://miptimingdetector.web.cern.ch/miptimingdetector/). Mostly run in QDC mode where tot, qfine, and energy are read out. Details for [TOFPET](https://drive.google.com/file/d/15z_Hjv814W3Wo-l9Emn5No1tnk_T7Np1/view).
 
 ## Plotting Cross Talk
-Cross talk: blue plot shows fractional energy in a bar when a MIP is deposited somewhere in the array, green shows when the MIP is in the central bar, red shows when MIP is in neighboring bar, and purple when the MIP is in a second to neighboring bar.
+Cross talk June 2019: blue plot shows fractional energy in a bar when a MIP is deposited somewhere in the array, green shows when the MIP is in the central bar, red shows when MIP is in neighboring bar, and purple when the MIP is in a second to neighboring bar.
+
+Cross talk Feb 2020: blue plot shows fractional energy in a bar when a MIP is deposited somewhere in the array, green shows when the MIP is in the central bar, red shows when MIP is in left neighboring bar, gold when MIP is in right neighboring bar. Cross talk defined by energy per channel (normalized by IC coeff) divided by energy in three bars (right, center, left). Similar to other cross talk definitions, as very very little light excapes beyond neighboring bars. 

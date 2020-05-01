@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  
+  /*
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
 		      // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
@@ -221,8 +221,8 @@ int main(int argc, char** argv)
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
   uint MIP_peak_low = 10; //2 for OV = 2
   int selBarNumber = 7;
+  */
   // mapping for milano array, flex cable connected
-  /*
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
 		      4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // VERTICAL
 // {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3,
@@ -231,18 +231,12 @@ int main(int argc, char** argv)
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
   uint MIP_peak_low = 8; 
   int selBarNumber = 9;
-  */
+  
 
-  int myChPos[NCH] = {0};
-  for (int iCh = 0; iCh < 16; iCh++)
-    {
-      myChPos[myChTop[iCh]] = 37-3*iCh;
-      myChPos[myChBot[iCh]] = 37-3*iCh;
-    }
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;
-  
+  float myChPos[NCH] = {0};  
   int NBARS = 16; // full array has 16 bars, 32 SiPM readouts
   
   
@@ -392,7 +386,6 @@ int main(int argc, char** argv)
 	      hEff_vs_X[step1][step2][iCh]->Fill(xIntercept, 1);
 	      hEff_vs_Y[step1][step2][iCh]->Fill(yIntercept, 1);
 	      hEff_vs_XY[step1][step2][iCh]->Fill(xIntercept, yIntercept, 1);
-	      
 	      hEnergy_cut[step1][step2][iCh]->Fill(my_signal); // cut out low region where energy and tot are non-linear with each other
 	    }
 	}
@@ -470,6 +463,8 @@ int main(int argc, char** argv)
       hEnergy_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
       
       TF1 * fitLandau = new TF1 ("fitLandau","landau", 0, 100);
+      fitLandau->SetNpx(1000);
+      fitLandau->SetParLimits(1,MIP_peak_low-1,60);
       hEnergy_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitLandau, "QRL");
       MIP_peak[chId] = fitLandau->GetParameter(1);        
       MIP_peak_err[chId] = fitLandau->GetParError(1);        
@@ -769,6 +764,7 @@ int main(int argc, char** argv)
       float effBar   = fitBarPos->GetParameter(3);
       float trackRes = fitBarPos->GetParameter(4);
       std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      myChPos[myChTop[chId]] = posBar; // saving center of bar position for cuts in cross talk plots
       if (chId == NBARS - 1)
 	{
 	  cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_Top.pdf"));
@@ -799,14 +795,47 @@ int main(int argc, char** argv)
       float effBar   = fitBarPos->GetParameter(3);
       float trackRes = fitBarPos->GetParameter(4);
       std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      myChPos[myChBot[chId]] = posBar; // saving center of bar position for cuts in cross talk plots
       if (chId == NBARS - 1)
         {
           cArrayEffOverlay2->SaveAs(Form("Efficiency_array_overlay_Bot.pdf"));
         }
     }
 
-  //     double center[NCH] = {0};
-   
+  int bars[NBARS] = {0};
+  int bottom_pos[NBARS] = {0};
+  int top_pos[NBARS] = {0};
+  for (int chId = 0; chId<NBARS; chId++)
+    {
+      bars[chId] = chId;
+      bottom_pos[chId] = myChPos[myChBot[chId]];
+      top_pos[chId] = myChPos[myChTop[chId]];
+    } 
+  TGraph* pos_bot = new TGraph(NBARS, bars, bottom_pos);
+  TGraph* pos_top = new TGraph(NBARS, bars, top_pos);
+  TCanvas* cBarPos = new TCanvas("cBarPos", "cBarPos",600,500);
+  cBarPos->cd();
+  pos_top->Draw("APE");
+  pos_top->GetYaxis()->SetRangeUser(0,40);
+  pos_top->SetTitle("");
+  pos_top->GetYaxis()->SetTitle("Position of bar");
+  pos_top->GetXaxis()->SetTitle("Bar Number");
+  pos_top->SetMarkerStyle(20);
+  pos_top->SetMarkerColor(kBlue+1);
+  pos_bot->Draw("same PE");
+  pos_bot->SetMarkerStyle(25);
+  pos_bot->SetMarkerColor(kRed+1);
+  leg = new TLegend(0.15,0.75,0.5,0.88,NULL,"brNDC");
+  leg->AddEntry(pos_top, "top SiPMs", "lp" );
+  leg->AddEntry(pos_bot, "bottom SiPMs", "lp" );
+  leg->Draw();
+  gPad->SetGridy();
+  cBarPos->SaveAs("Position of Bars.pdf");
+
+
+  //  for (int i=0; i<70; i++) {
+  //    std::cout << "channel = " << i << " center = " << myChPos[i] << std::endl;
+  //  }
   //************************************************************************************//
   //              loop 1
   //************************************************************************************//
@@ -840,8 +869,8 @@ int main(int argc, char** argv)
           
 	  //              std::cout << "in_me[" << chId << "] = " << in_me << std::endl;
 	  hXT[step1][step2][myChList[chId]]->Fill(in_me);
-	  
-	  if (energy[myChList[chId]] > MIP_peak[chId]*0.8 && energy[myChList[chId]] < MIP_peak[chId]*5 ) //&& myChPos[myChList[chId]]-1.5 < xIntercept && xIntercept < myChPos[myChList[chId]]+1.5)  // restrict to the intercept must be in the bar of interest
+
+	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 ) && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;

@@ -212,16 +212,16 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  /*
+  
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
 		      // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
 		     // 40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
     int myChTop[16] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63}; // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
-  uint MIP_peak_low = 10; //2 for OV = 2
+  uint MIP_peak_low = 6;//10; //2 for OV = 2, 6 for OV = 4, 10 for OV = 6
   int selBarNumber = 7;
-  */
+  /*
   // mapping for milano array, flex cable connected
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
 		      4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // VERTICAL
@@ -231,7 +231,7 @@ int main(int argc, char** argv)
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
   uint MIP_peak_low = 8; 
   int selBarNumber = 9;
-  
+  */
 
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
@@ -346,7 +346,7 @@ int main(int argc, char** argv)
       if (ntracks != 1) continue; // require 1 MIP per event
       
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
-      //      if (step1!=2) continue;       // this is Overvoltage 
+      //      if (step1!=4) continue;       // this is Overvoltage 
       //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
       //     std::cout << "event = " << iEvt << std::endl;
 
@@ -468,7 +468,7 @@ int main(int argc, char** argv)
       hEnergy_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitLandau, "QRL");
       MIP_peak[chId] = fitLandau->GetParameter(1);        
       MIP_peak_err[chId] = fitLandau->GetParError(1);        
-      if (MIP_peak[chId]>0)
+      if (MIP_peak[chId]>0 && MIP_peak[chId] < 2*MIP_peak_low)
         {
 	  avgMIP += MIP_peak[chId];
 	  peak_count++;
@@ -495,6 +495,7 @@ int main(int argc, char** argv)
   cEnergiesZoomLog->cd(2);
   hEnergy[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
   hEnergy_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
+  cEnergiesZoomLog->SaveAs(Form("Energy Top and Bottom Array Center Bar.pdf"));
   gPad->SetLogy();
   cEnergiesZoomLog->SaveAs(Form("Energy Top and Bottom Array Center Bar, Log.pdf"));  
   
@@ -805,12 +806,38 @@ int main(int argc, char** argv)
   int bars[NBARS] = {0};
   int bottom_pos[NBARS] = {0};
   int top_pos[NBARS] = {0};
+  TH1F* BarSpacingBot = new TH1F("BarSpacingBot", "Spacing Between Bottom Channels", 20,2,4);
+  TH1F* BarSpacingTop = new TH1F("BarSpacingTop", "Spacing Between Top Channels", 20,2,4);
+
   for (int chId = 0; chId<NBARS; chId++)
     {
       bars[chId] = chId;
       bottom_pos[chId] = myChPos[myChBot[chId]];
       top_pos[chId] = myChPos[myChTop[chId]];
+      if (chId != 0 ) 
+	{
+	  BarSpacingBot->Fill(myChPos[myChBot[chId]]-myChPos[myChBot[chId-1]]);
+          BarSpacingTop->Fill(myChPos[myChTop[chId]]-myChPos[myChTop[chId-1]]);
+	}
     } 
+  TCanvas* cBarSpacing = new TCanvas("cBarSpacing", "cBarSpacing",800,500);
+  cBarSpacing->Divide(2,1);
+  cBarSpacing->cd(1);
+  BarSpacingTop->Draw();
+  BarSpacingTop->GetXaxis()->SetTitle("Spacing Between Top Bars (mm)");
+  BarSpacingTop->SetLineColor(kRed+1);
+  BarSpacingTop->SetFillColor(kRed+1);
+  BarSpacingTop->SetFillStyle(3001);
+  gPad->SetGridx();
+  cBarSpacing->cd(2);
+  BarSpacingBot->Draw();
+  BarSpacingBot->GetXaxis()->SetTitle("Spacing Between Bottom Bars (mm)");
+  BarSpacingBot->SetLineColor(kBlue+1);
+  BarSpacingBot->SetFillColor(kBlue+1);
+  BarSpacingBot->SetFillStyle(3001);
+  gPad->SetGridx();
+  cBarSpacing->SaveAs(Form("Bar Spacing Hist.pdf"));
+
   TGraph* pos_bot = new TGraph(NBARS, bars, bottom_pos);
   TGraph* pos_top = new TGraph(NBARS, bars, top_pos);
   TCanvas* cBarPos = new TCanvas("cBarPos", "cBarPos",600,500);
@@ -848,7 +875,7 @@ int main(int argc, char** argv)
     {
       tree->GetEntry(iEvt);
       if (ntracks != 1) continue; // require 1 MIP per event
-      //      if (step1!=2) continue;       // this is Overvoltage   
+      //      if (step1!=4) continue;       // this is Overvoltage   
       //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
 
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
@@ -870,7 +897,7 @@ int main(int argc, char** argv)
 	  //              std::cout << "in_me[" << chId << "] = " << in_me << std::endl;
 	  hXT[step1][step2][myChList[chId]]->Fill(in_me);
 
-	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 ) && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
+	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 )) // && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;
@@ -909,7 +936,7 @@ int main(int argc, char** argv)
   TH1F * hXT_norm_tot = new TH1F ("hXT_norm_tot", "hXT_norm_tot", 20, 0.7, 1.3);
   TH1F * hXT_norm_top = new TH1F ("hXT_norm_top", "hXT_norm_top", 20, 0.7, 1.3);
   TH1F * hXT_norm_bot = new TH1F ("hXT_norm_bot", "hXT_norm_bot", 20, 0.7, 1.3);
-  
+		
   TCanvas * cArrayXT = new TCanvas ("cArrayXT", "cArrayXT", 1600, 300);
   cArrayXT->Divide(NBARS, 2);
   for (int chId = 0; chId<NBARS*2; chId++)
@@ -978,12 +1005,15 @@ int main(int argc, char** argv)
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
+  gPad->SetLogy();
   cXTZoom->cd(2);
   hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   cXTZoom->SaveAs(Form("Cross Talk, Center Bar.pdf"));
+  gPad->SetLogy();
+  cXTZoom->SaveAs(Form("Cross Talk, Center Bar, Log.pdf"));
   
   avgXT /= XT_count; 
   TGraphErrors * gXT_top = new TGraphErrors();

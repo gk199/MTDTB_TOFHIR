@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  /*
+  
   std::cout << "CALTECH PIN CONNECTED ARRAY" << std::endl;
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
@@ -222,8 +222,8 @@ int main(int argc, char** argv)
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
   uint MIP_peak_low = 6; //2 for OV = 2, 6 for OV = 4, 10 for OV = 6
   int selBarNumber = 7;
-  */
   
+  /*
     std::cout << "MILANO FLEX CONNECTED ARRAY" <<std::endl;
   // mapping for milano array, flex cable connected
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
   uint MIP_peak_low = 8; // 8; 
   int selBarNumber = 9;
-  
+  */
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;

@@ -114,14 +114,30 @@ int main(int argc, char** argv)
   float       qfine[256];
   float       energy[256];      
   
-  
+  // selecting only runs with the OV we want to consider 
+  int Diff_OV_Runs[500] = {0};
+  int OV_value = 6;
+  int vth12e = 211606;
+
   TChain * tree = new TChain("data", "data");
-  
+  TChain * test_tree = new TChain("data", "data");
+  int iterator = 0;
+  for (int iRun = firstRun; iRun <= lastRun; iRun++)
+    {
+      test_tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) );
+      test_tree->SetBranchAddress("step1", &step1);
+      test_tree->SetBranchAddress("step2", &step2);
+      Long64_t NEVENTS = test_tree->GetEntries();
+      test_tree->GetEntry(NEVENTS-1);
+      if (step1 != OV_value || step2 != vth12e) Diff_OV_Runs[iterator] = iRun;
+      iterator++;
+    }  
   
   // going over each of the runs listed as command line arguments
   for (int iRun = firstRun; iRun <= lastRun; iRun++)
     {
       //if ( std::find(bad_runs.begin(), bad_runs.end(), iRun) != bad_runs.end()) continue;       
+      if (std::find(std::begin(Diff_OV_Runs), std::end(Diff_OV_Runs), iRun) != std::end(Diff_OV_Runs) ) continue; // only add runs with OV we care about
       tree->Add( Form("%s/run%.5d_events.root", data_path.c_str(), iRun) );  
       std::cout << "adding run: " << iRun << std::endl;
     }
@@ -212,7 +228,7 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  
+  /*
   std::cout << "CALTECH PIN CONNECTED ARRAY" << std::endl;
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
@@ -220,10 +236,10 @@ int main(int argc, char** argv)
 		     // 40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
     int myChTop[16] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63}; // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
-  uint MIP_peak_low = 6; //2 for OV = 2, 6 for OV = 4, 10 for OV = 6
+  uint MIP_peak_low = 10; //2 for OV = 2, 6 for OV = 4, 10 for OV = 6
   int selBarNumber = 7;
-  
-  /*
+  */
+   
     std::cout << "MILANO FLEX CONNECTED ARRAY" <<std::endl;
   // mapping for milano array, flex cable connected
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
@@ -234,7 +250,7 @@ int main(int argc, char** argv)
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
   uint MIP_peak_low = 8; // 8; 
   int selBarNumber = 9;
-  */
+  
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;
@@ -295,7 +311,7 @@ int main(int argc, char** argv)
   // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
   for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
     {
-      //      if (step1_vct.at(iStep1) !=6 ) continue;
+      //      if (step1_vct.at(iStep1) !=OV_value ) continue;
       for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
 	{
 	  //	  if (step2_vct.at(iStep2) != 161606 ) continue;
@@ -354,7 +370,7 @@ int main(int argc, char** argv)
       if (ntracks != 1) continue; // require 1 MIP per event
       
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
-      //      if (step1!=6) continue;       // this is Overvoltage 
+      //      if (step1!=OV_value) continue;       // this is Overvoltage 
       //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
       //     std::cout << "event = " << iEvt << std::endl;
 
@@ -422,7 +438,7 @@ int main(int argc, char** argv)
   hPosY->GetYaxis()->SetTitle("Counts");
   gPad->SetLogy();
   cBeamPosY->SaveAs(Form("Beam Y Position.pdf"));
-  
+
   TCanvas * cArrayTots = new TCanvas ("cArrayTots", "cArrayTots", 1600, 300);
   cArrayTots->Divide(NBARS, 2);
   for (int chId = 0; chId<NBARS*2; chId++)
@@ -587,12 +603,14 @@ int main(int argc, char** argv)
   TCanvas * cIC_RMS = new TCanvas ("cIC_RMS", "cIC_RMS", 1000, 500);
   cIC_RMS->Divide(3,1);
   cIC_RMS->cd(1);
+  gStyle->SetOptStat(1);
   hIC_tot->Draw();    
   hIC_tot->GetXaxis()->SetTitle("IC (all)");
   hIC_tot->SetLineColor(kBlack);
   hIC_tot->SetFillColor(kBlack);
   hIC_tot->SetFillStyle(3001);
   gPad->SetGridx();
+  gPad->Update();
 
   cIC_RMS->cd(2);
   hIC_top->Draw();    
@@ -601,7 +619,7 @@ int main(int argc, char** argv)
   hIC_top->SetFillColor(kBlue+1);
   hIC_top->SetFillStyle(3001);
   gPad->SetGridx();
-  
+
   cIC_RMS->cd(3);
   hIC_bot->Draw();    
   hIC_bot->GetXaxis()->SetTitle("IC (bottom)");
@@ -611,7 +629,10 @@ int main(int argc, char** argv)
   gPad->SetGridx();
   
   cIC_RMS->SaveAs(Form("IC Distribution.pdf"));
+
   
+  gStyle->SetOptStat(0);
+  gPad->Update();
   //2D energy vs position plots
   TCanvas * cArrayEnergy_vsXY = new TCanvas ("cArrayEnergy_vsXY", "cArrayEnergy_vsXY", 1600, 300);
   cArrayEnergy_vsXY->Divide(NBARS, 2);
@@ -911,7 +932,7 @@ int main(int argc, char** argv)
     {
       tree->GetEntry(iEvt);
       if (ntracks != 1) continue; // require 1 MIP per event
-      //      if (step1!=6) continue;       // this is Overvoltage   
+      //      if (step1!=OV_value) continue;       // this is Overvoltage   
       //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
 
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
@@ -932,7 +953,7 @@ int main(int argc, char** argv)
 	  //              std::cout << "in_me[" << chId << "] = " << in_me << std::endl;
 	  hXT[step1][step2][myChList[chId]]->Fill(in_me);
 
-	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 )) // && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
+	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 ) && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
 	    {                
 	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;
@@ -1061,6 +1082,7 @@ int main(int argc, char** argv)
     }
   std::cout << "XT count all, left, right = " << XT_count << ", " << XT_count_ln << ", " << XT_count_rn << std::endl;
   cArrayXT->SaveAs(Form("Cross Talk.pdf"));
+  //  cArrayXT->SaveAs(Form("Cross Talk_%f_%f.pdf",step1_vct.at(selStep1), step2_vct.at(selStep2)));
   
   TCanvas * cXTZoom = new TCanvas ("cXTZoom", "cXTZoom", 500, 800);
   cXTZoom->Divide(1, 2);
@@ -1070,7 +1092,7 @@ int main(int argc, char** argv)
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   gPad->SetLogy();
-  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->GetYaxis()->SetRange(1,1000);
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
   leg = new TLegend(0.3,0.7,0.6,0.9);
   leg->AddEntry(hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar");
   leg->AddEntry(hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in right bar");
@@ -1081,10 +1103,9 @@ int main(int argc, char** argv)
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
-  gStyle->SetOptStat(0);
-  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->GetYaxis()->SetRange(1,1000);
-  cXTZoom->SaveAs(Form("Cross Talk, Center Bar.pdf"));
   gPad->SetLogy();
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
+  gStyle->SetOptStat(0);
   cXTZoom->SaveAs(Form("Cross Talk, Center Bar, Log.pdf"));
   
   avgXT /= XT_count; 
@@ -1301,7 +1322,7 @@ int main(int argc, char** argv)
   cCTR_UDZoom->cd();
   hCTR_UD[step1_vct.at(selStep1)][step2_vct.at(selStep2)][selBarNumber]->Draw();
   //     hCTR_UD_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][selBarNumber]->Draw("same");
-  
+
   avgCTR /= CTR_count; 
   TGraphErrors * gCTR_UD      = new TGraphErrors();    
   TGraphErrors * gCTR_UD_norm = new TGraphErrors();    

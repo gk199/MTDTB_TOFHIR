@@ -6,6 +6,7 @@ Analysis code for the SiPM array FNAL testbeams. To compile,
     g++ -Wall -o plotTOFHIR_to_trigger plotTOFHIR_to_trigger.C functions.hh `root-config --cflags --glibs` -lSpectrum
     g++ -Wall -o plotTOFHIR_to_trigger_FebTB plotTOFHIR_to_trigger_FebTB.C functions.hh `root-config --cflags --glibs` -lSpectrum
     g++ -Wall -o plotTOFHIR_to_triggerFebTBv2 plotTOFHIR_to_trigger_FebTB_v2.C functions_v2.cc `root-config --cflags --glibs` -lSpectrum
+    g++ -Wall -o Plots_MIP_RMS_OV Plots_MIP_RMS_OV.cxx `root-config --cflags --glibs` -lSpectrum
 
 and to run,
 
@@ -14,8 +15,9 @@ and to run,
     ./plotTOFHIR_to_triggerFebTBv2 <first run number> <last run number>
     ./plotTOFHIR_to_triggerFebTBv2 24702 24712
     ./plotTOFHIR_to_triggerFebTBv2 24713 24815
+    ./Plots_MIP_RMS_OV
 
-The last two lines: Runs 24702-24712 are configuration 9.1 (wide beam, pin and flex array back to back) with OV = 6; 24713-24815 are configuration 9.1 with OV = 2 in some runs (need to require in code).
+The last two lines: Runs 24702-24712 are configuration 9.1 (wide beam, pin and flex array back to back) with OV = 6; 24713-24815 are configuration 9.1 with OV = 2 in some runs (need to require in code). Runs 25000-25250 have more active channels for the flex cable, and a specific overvoltage and step2 (vth1, vth2, vthe) may be selected in the code. Plots_MIP_RMS_OV plots the MIP peak value, RMS of IC coefficients, and quadrature subtracted RMS against the overvoltage.
 
 ## June Testbeam Details
 Data from the June 2019 FNAL Testbeam is stored in 

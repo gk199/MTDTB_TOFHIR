@@ -8,6 +8,7 @@
 #include "TLegend.h"
 #include "TROOT.h"
 #include "TH1.h"
+#include "TF1.h"
 #include "TH2.h"
 #include "TProfile.h"
 #include "TFile.h"
@@ -32,10 +33,18 @@ int main() {
   TGraph *RMSflex_sub8_vs_OV = new TGraph (5,OV, RMS_sub8_flex);
   TLegend *leg;
 
+  // fitting function for the MIP peak vs OV plot
+  /*
+  TFile * inputFile = new TFile ("outFileFitHDR2.root", "READ");
+  TF1 * myFit = inputFile->Get("fitHDR2_signal");
+  for (int i=2; i<5; i++) myFit->FixParameter(i, myFit->GetParameter(i));
+  */
+
   TCanvas * cMIP_peak = new TCanvas ("cMIP_peak", "cMIP_peak", 600, 500);
   cMIP_peak->cd();
   MIPpin_vs_OV->Draw("APE");
   MIPpin_vs_OV->GetYaxis()->SetRangeUser(0, 20);
+  MIPpin_vs_OV->GetXaxis()->SetLimits(0,9);
   MIPpin_vs_OV->SetTitle("MIP Peak vs. OV");
   MIPpin_vs_OV->GetYaxis()->SetTitle("MIP peak [a.u.]");
   MIPpin_vs_OV->GetXaxis()->SetTitle("Overvoltage (V)");
@@ -51,12 +60,23 @@ int main() {
   leg->AddEntry(MIPflex_vs_OV, "Flex connected array", "lp" );
   leg->Draw();
   gPad->SetGridy();
-  cMIP_peak->SaveAs(Form("MIP Peak Values vs OV.pdf"));
+  cMIP_peak->SaveAs(Form("MIP_Peak_Values_vs_OV.pdf"));
+  // fitting function, linear
+  TF1 * linear_pin = new TF1("linear_pin","pol1");
+  TF1 * linear_flex = new TF1("linear_flex","pol1");
+  MIPpin_vs_OV->Fit(linear_pin);
+  MIPflex_vs_OV->Fit(linear_flex);
+  linear_pin->Draw("same");
+  linear_flex->Draw("same");
+  std::cout << linear_pin->GetParameter(0) << " = offset for pin, and " << linear_flex->GetParameter(0) << " = offset for flex " << std::endl;
+  std::cout << linear_pin->GetParameter(1) << " = slope for pin, and "<< linear_flex->GetParameter(1) << " = slope for flex " << std::endl;
+  cMIP_peak->SaveAs(Form("LinearFit_MIP_Peak_Values_vs_OV.pdf"));
 
   TCanvas * cIC_RMS = new TCanvas ("cIC_RMS", "cIC_RMS", 600, 500);
   cIC_RMS->cd();
   RMSpin_vs_OV->Draw("APE");
   RMSpin_vs_OV->GetYaxis()->SetRangeUser(0, 0.23);
+  RMSpin_vs_OV->GetXaxis()->SetLimits(0,9);
   RMSpin_vs_OV->SetTitle("RMS of Intercalibration Coefficient vs. OV");
   RMSpin_vs_OV->GetYaxis()->SetTitle("RMS of IC Values [a.u.]");
   RMSpin_vs_OV->GetXaxis()->SetTitle("Overvoltage (V)");
@@ -72,12 +92,13 @@ int main() {
   leg->AddEntry(RMSflex_vs_OV, "Flex connected array", "lp" );
   leg->Draw();
   gPad->SetGridy();
-  cIC_RMS->SaveAs(Form("RMS of IC Values vs OV.pdf"));
+  cIC_RMS->SaveAs(Form("RMS_of_IC_Values_vs_OV.pdf"));
 
   TCanvas * cIC_RMS_sub8 = new TCanvas ("cIC_RMS_sub8", "cIC_RMS_sub8", 600, 500);
   cIC_RMS_sub8->cd();
   RMSpin_sub8_vs_OV->Draw("APE");
   RMSpin_sub8_vs_OV->GetYaxis()->SetRangeUser(0, 0.23);
+  RMSpin_sub8_vs_OV->GetXaxis()->SetLimits(0,9);
   RMSpin_sub8_vs_OV->SetTitle("#sqrt{RMS_{OV} - RMS_{8}} of Intercalibration Coefficient vs. OV");
   RMSpin_sub8_vs_OV->GetYaxis()->SetTitle("#sqrt{RMS_{OV} - RMS_{8}} of IC Values [a.u.]");
   RMSpin_sub8_vs_OV->GetXaxis()->SetTitle("Overvoltage (V)");
@@ -93,7 +114,7 @@ int main() {
   leg->AddEntry(RMSflex_sub8_vs_OV, "Flex connected array", "lp" );
   leg->Draw();
   gPad->SetGridy();
-  cIC_RMS_sub8->SaveAs(Form("RMS sub8 of IC Values vs OV.pdf"));
+  cIC_RMS_sub8->SaveAs(Form("RMS_sub8_of_IC_Values_vs_OV.pdf"));
 
   return 0;
 }

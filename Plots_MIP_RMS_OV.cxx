@@ -34,11 +34,11 @@ int main() {
   TLegend *leg;
 
   // fitting function for the MIP peak vs OV plot
-  /*
   TFile * inputFile = new TFile ("outFileFitHDR2.root", "READ");
-  TF1 * myFit = inputFile->Get("fitHDR2_signal");
-  for (int i=2; i<5; i++) myFit->FixParameter(i, myFit->GetParameter(i));
-  */
+  TF1 * myFit_pin = (TF1*) inputFile->Get("fitHDR2_signal");
+  TF1 * myFit_flex = (TF1*) inputFile->Get("fitHDR2_signal");
+  for (int i=2; i<5; i++) myFit_pin->FixParameter(i, myFit_pin->GetParameter(i));
+  for (int i=2; i<5; i++) myFit_flex->FixParameter(i, myFit_flex->GetParameter(i));
 
   TCanvas * cMIP_peak = new TCanvas ("cMIP_peak", "cMIP_peak", 600, 500);
   cMIP_peak->cd();
@@ -71,6 +71,13 @@ int main() {
   std::cout << linear_pin->GetParameter(0) << " = offset for pin, and " << linear_flex->GetParameter(0) << " = offset for flex " << std::endl;
   std::cout << linear_pin->GetParameter(1) << " = slope for pin, and "<< linear_flex->GetParameter(1) << " = slope for flex " << std::endl;
   cMIP_peak->SaveAs(Form("LinearFit_MIP_Peak_Values_vs_OV.pdf"));
+  MIPpin_vs_OV->Fit(myFit_pin,"","",0,5);
+  MIPflex_vs_OV->Fit(myFit_flex,"","",0,5);
+  myFit_pin->Draw("same");
+  myFit_flex->Draw("same");
+  std::cout << myFit_pin->GetParameter(0) << " = offset for pin, and " << myFit_flex->GetParameter(0) << " = offset for flex, fancy fit" << std::endl;
+  std::cout << myFit_pin->GetParameter(1) << " = slope for pin, and "<< myFit_flex->GetParameter(1) << " = slope for flex, fancy fit" << std::endl;
+  cMIP_peak->SaveAs(Form("FancyFit_MIP_Peak_Values_vs_OV.pdf"));
 
   TCanvas * cIC_RMS = new TCanvas ("cIC_RMS", "cIC_RMS", 600, 500);
   cIC_RMS->cd();

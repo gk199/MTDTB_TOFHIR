@@ -228,18 +228,17 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  /*
+  
   std::cout << "CALTECH PIN CONNECTED ARRAY" << std::endl;
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
 		      // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38,
 		     // 40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // VERTICAL
-    int myChTop[16] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63}; // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
+  int myChTop[16] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63}; // {63,57,60,50,55,59,56,61,53,58,54,62,51,9,52,38}; // one side from channelMapping2, totalEnergy[0]
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
-  uint MIP_peak_low = 10; //2 for OV = 2, 6 for OV = 4, 10 for OV = 6
+  uint MIP_peak_low = 10; //2 for OV = 2, 4 for OV=3, 6 for OV = 4, 10 for OV = 6, 14 for OV = 8
   int selBarNumber = 7;
-  */
-   
+  /*
     std::cout << "MILANO FLEX CONNECTED ARRAY" <<std::endl;
   // mapping for milano array, flex cable connected
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
@@ -248,9 +247,9 @@ int main(int argc, char** argv)
 //  25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4}; // VERTICAL
   int myChBot[16] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19}; // {19,17,18,16,22,23,20,21,12,5,14,7,1,0,10,3};
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
-  uint MIP_peak_low = 8; // 8; 
+  uint MIP_peak_low = 8; // 8 for OV 6, 11 for OV 8, 5 for OV 4, 3 for OV 3, 1 for OV 2; 
   int selBarNumber = 9;
-  
+  */
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;
@@ -281,6 +280,9 @@ int main(int argc, char** argv)
   
   std::map<float, std::map<float, std::map<int, TH1F * > > > hXT;
   std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cut;
+  std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cutPos;
+  std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cutMIP2x;
+  std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cutMIP3x;
   std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cut_ln;
   std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cut_lln;
   std::map<float, std::map<float, std::map<int, TH1F * > > > hXT_cut_rn;
@@ -311,10 +313,8 @@ int main(int argc, char** argv)
   // step 1, step 2, and channel listing loops. Histograms are defined inside the loops
   for (int iStep1 = 0; iStep1< NSTEP1; iStep1++)
     {
-      //      if (step1_vct.at(iStep1) !=OV_value ) continue;
       for (int iStep2 = 0; iStep2< NSTEP2; iStep2++)
 	{
-	  //	  if (step2_vct.at(iStep2) != 161606 ) continue;
 	  for (int iCh = 0; iCh < NCH; iCh++)
 	    {   
 	      if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
@@ -341,6 +341,9 @@ int main(int argc, char** argv)
 	      
 	      hXT[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_%s", this_caption.c_str()), Form("Cross Talk %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_%s", this_caption.c_str()), Form("Cross Talk %s", this_title.c_str()), 400, 0, 1);
+              hXT_cutPos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cutPos_%s", this_caption.c_str()), Form("Cross Talk Position Cut %s", this_title.c_str()), 400, 0, 1);
+              hXT_cutMIP2x[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cutMIP2x_%s", this_caption.c_str()), Form("Cross Talk MIPx2 %s", this_title.c_str()), 400, 0, 1);
+              hXT_cutMIP3x[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cutMIP3x_%s", this_caption.c_str()), Form("Cross Talk MIPx3 %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_ln[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_ln_%s", this_caption.c_str()), Form("Cross Talk ln bar %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_lln[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_lln_%s", this_caption.c_str()), Form("Cross Talk lln bar %s", this_title.c_str()), 400, 0, 1);
 	      hXT_cut_rn[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("hXT_cut_rn_%s", this_caption.c_str()), Form("Cross Talk rn bar %s", this_title.c_str()), 400, 0, 1);
@@ -370,8 +373,6 @@ int main(int argc, char** argv)
       if (ntracks != 1) continue; // require 1 MIP per event
       
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
-      //      if (step1!=OV_value) continue;       // this is Overvoltage 
-      //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
       //     std::cout << "event = " << iEvt << std::endl;
 
       if (std::find(trk_blacklist->begin(), trk_blacklist->end(), double(x_dut)) != trk_blacklist->end() ) continue;
@@ -468,7 +469,11 @@ int main(int argc, char** argv)
   double MIP_peak_err[NBARS*2] = {0};
   double IC[NBARS*2] = {0};
   double avgMIP = 0; 
+  double avgMIP_bot = 0;
+  double avgMIP_top = 0;
   int peak_count = 0;
+  int peak_count_bot = 0;
+  int peak_count_top = 0;
   
   TH1F * hIC_tot = new TH1F ("hIC_tot", "hIC_tot", 20, 0.7, 1.3);
   TH1F * hIC_top = new TH1F ("hIC_top", "hIC_top", 20, 0.7, 1.3);
@@ -497,6 +502,14 @@ int main(int argc, char** argv)
       if (MIP_peak[chId]>0 && MIP_peak[chId] < 2*MIP_peak_low)
         {
 	  avgMIP += MIP_peak[chId];
+	  if (chId<NBARS) {
+	    avgMIP_top += MIP_peak[chId];
+	    peak_count_top++;
+	  }
+	  else {
+	    avgMIP_bot += MIP_peak[chId];
+	    peak_count_bot++;
+	  }
 	  peak_count++;
         }
     }
@@ -529,12 +542,16 @@ int main(int argc, char** argv)
   
   //     avgMIP /= NBARS*2;
   avgMIP /= peak_count; // we have 29 active channels!!    
+  avgMIP_top /= peak_count_top;
+  avgMIP_bot /= peak_count_bot;
   TGraphErrors * gMIP_top = new TGraphErrors();
   TGraphErrors * gMIP_bot = new TGraphErrors();
   TGraphErrors * gIC_top = new TGraphErrors();
   TGraphErrors * gIC_bot = new TGraphErrors();
   
   std::cout << "average MIP peak = " << avgMIP << std::endl;
+  std::cout << "average MIP peak top simps = " << avgMIP_top << std::endl;
+  std::cout << "average MIP peak bottom sipms = " << avgMIP_bot << std::endl;
 
   for (int chId = 0; chId<NBARS*2; chId++) 
     {
@@ -768,13 +785,18 @@ int main(int argc, char** argv)
   cEfficiency_vsPosZoom->SaveAs(Form("Efficiency vs. X Position, Center Bar.pdf"));
 
   // fitting function for efficiency plots
-  TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, 2, 32, 5);
-  fitBarPos->SetParameters(5., 3.2, 0.01, 0.7, 0.3); // center, width, baseline, max, sigma_x
+  TF1 * fitBarPos = new TF1 ("fitBarPos", fitBarEffErr, -10, 45, 5);
+  fitBarPos->SetParameters(5., 3.2, 0.05, 0.7, 0.4); // center, width, baseline, max, sigma_x
   fitBarPos->SetNpx(5000);
   fitBarPos->SetParLimits(0, minXpos-10, maxXpos-10);
   fitBarPos->SetParLimits(1, 3.0, 3.4);
   fitBarPos->SetParLimits(2, 0.0, 0.1);
-  fitBarPos->SetParLimits(3, 0.5, 1.);
+  fitBarPos->SetParLimits(3, 0.5, 1.0);
+  double exp_sigma_x = 0.42;
+  fitBarPos->SetParLimits(4, exp_sigma_x*0.8, exp_sigma_x*1.2);
+
+  TH1F * BarSpacingTop = new TH1F ("BarSpacingTop", "BarSpacingTop", 20, 3.0, 3.4);
+  TH1F * BarSpacingBot = new TH1F ("BarSpacingBot", "BarSpacingBot", 20, 3.0, 3.4);
 
   double avgEff = 0, numEff = 0; 
 
@@ -793,11 +815,13 @@ int main(int argc, char** argv)
 	  if (hPosX->GetBinContent(iBin+1)>0) hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetBinContent(iBin+1, hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetBinContent(iBin+1)/hPosX->GetBinContent(iBin+1) );
 	  //	  if (hEff_vs_X_noMIP[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetBinContent(iBin+1)>0) hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetBinContent(iBin+1, hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetBinContent(iBin+1)/hEff_vs_X_noMIP[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetBinContent(iBin+1) );
 	}
+      if (selBarNumber == 7 && (chId == 0 || chId == 1 || chId == 13 || chId == 14 || chId == 15) ) continue;
+      if (selBarNumber == 9 && (chId == 0 || chId == 1 || chId == 2 || chId == 14 || chId == 15) ) continue;
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Draw("same");
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetAxisRange(0,1,"Y");
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->SetAxisRange(0,40,"X");
       gStyle->SetOptStat(0);
-      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 38-chId*3.2);
+      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 41.4-chId*3.2);
       else fitBarPos->SetParameter(0, -10.8+chId*3.2);
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->Fit(fitBarPos,"QR");
       float posBar   = fitBarPos->GetParameter(0);
@@ -805,12 +829,13 @@ int main(int argc, char** argv)
       float effBar   = fitBarPos->GetParameter(3);
       float trackRes = fitBarPos->GetParameter(4);
       std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      BarSpacingTop->Fill(widthBar);
       if (effBar > 0.5 && effBar < 1 ) { 
 	avgEff += effBar;
 	numEff++;
       }
       myChPos[myChTop[chId]] = posBar; // saving center of bar position for cuts in cross talk plots
-      if (chId == NBARS - 1)
+      if (chId == NBARS - 1 || (selBarNumber == 7 && chId == 12) || (selBarNumber == 9 && chId == 13))
 	{
 	  cArrayEffOverlay->SaveAs(Form("Efficiency_array_overlay_Top.pdf"));
 	}
@@ -835,12 +860,13 @@ int main(int argc, char** argv)
       //      std::cout << chId << " and " << myChBot[chId] << std::endl;
       //      std::cout << hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[chId]]->GetEntries() << std::endl;
       //      std::cout << hPosX->GetEntries() << std::endl;
-
+      if (selBarNumber == 7 && (chId == 0 || chId == 1 || chId == 13 || chId == 14 ||chId ==15) ) continue;
+      if (selBarNumber == 9 && (chId == 0 || chId == 1 || chId == 2 || chId == 14 || chId == 15) ) continue;
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Draw("same");
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetAxisRange(0,1,"Y");
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->SetAxisRange(0,40,"X");
       gStyle->SetOptStat(0);
-      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 35-chId*3.2);
+      if (selBarNumber == 7 ) fitBarPos->SetParameter(0, 41.4-chId*3.2); // 35-chId*3.2);
       else fitBarPos->SetParameter(0, -10.8+chId*3.2);
       hEff_vs_X[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[chId]]->Fit(fitBarPos,"QR");
       float posBar   = fitBarPos->GetParameter(0);
@@ -848,12 +874,13 @@ int main(int argc, char** argv)
       float effBar   = fitBarPos->GetParameter(3);
       float trackRes = fitBarPos->GetParameter(4);
       std::cout << "posBar[" << chId << "] = " << posBar << " :: width = " << widthBar << " :: effBar = " << effBar << " :: trackRes = " << trackRes << std::endl;
+      BarSpacingBot->Fill(widthBar);
       if ((effBar > 0.5) && (effBar < 1)) {
         avgEff += effBar;
         numEff++;
       } 
       myChPos[myChBot[chId]] = posBar; // saving center of bar position for cuts in cross talk plots
-      if (chId == NBARS - 1)
+      if (chId == NBARS - 1 || (selBarNumber == 7 && chId == 12) || (selBarNumber == 9 && chId == 13))
         {
           cArrayEffOverlay2->SaveAs(Form("Efficiency_array_overlay_Bot.pdf"));
         }
@@ -863,8 +890,8 @@ int main(int argc, char** argv)
   int bars[NBARS] = {0};
   int bottom_pos[NBARS] = {0};
   int top_pos[NBARS] = {0};
-  TH1F* BarSpacingBot = new TH1F("BarSpacingBot", "Spacing Between Bottom Channels", 20,2,4);
-  TH1F* BarSpacingTop = new TH1F("BarSpacingTop", "Spacing Between Top Channels", 20,2,4);
+  //  TH1F* BarSpacingBot = new TH1F("BarSpacingBot", "Spacing Between Bottom Channels", 20,2,4);
+  //  TH1F* BarSpacingTop = new TH1F("BarSpacingTop", "Spacing Between Top Channels", 20,2,4);
 
   for (int chId = 0; chId<NBARS; chId++)
     {
@@ -873,13 +900,14 @@ int main(int argc, char** argv)
       top_pos[chId] = myChPos[myChTop[chId]];
       if (chId != 0 ) 
 	{
-	  BarSpacingBot->Fill(myChPos[myChBot[chId]]-myChPos[myChBot[chId-1]]);
-          BarSpacingTop->Fill(myChPos[myChTop[chId]]-myChPos[myChTop[chId-1]]);
+	  //	  BarSpacingBot->Fill(myChPos[myChBot[chId]]-myChPos[myChBot[chId-1]]);
+	  //          BarSpacingTop->Fill(myChPos[myChTop[chId]]-myChPos[myChTop[chId-1]]);
 	}
     } 
   TCanvas* cBarSpacing = new TCanvas("cBarSpacing", "cBarSpacing",800,500);
   cBarSpacing->Divide(2,1);
   cBarSpacing->cd(1);
+  gStyle->SetOptStat(1);
   BarSpacingTop->Draw();
   BarSpacingTop->GetXaxis()->SetTitle("Spacing Between Top Bars (mm)");
   BarSpacingTop->SetLineColor(kRed+1);
@@ -887,6 +915,7 @@ int main(int argc, char** argv)
   BarSpacingTop->SetFillStyle(3001);
   gPad->SetGridx();
   cBarSpacing->cd(2);
+  gStyle->SetOptStat(1);
   BarSpacingBot->Draw();
   BarSpacingBot->GetXaxis()->SetTitle("Spacing Between Bottom Bars (mm)");
   BarSpacingBot->SetLineColor(kBlue+1);
@@ -932,8 +961,6 @@ int main(int argc, char** argv)
     {
       tree->GetEntry(iEvt);
       if (ntracks != 1) continue; // require 1 MIP per event
-      //      if (step1!=OV_value) continue;       // this is Overvoltage   
-      //      if (step2!=211606) continue;   // this is vth1, vth2, vthe each in 2 digits, +1
 
       if (iEvt%1000 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
       if (std::find(trk_blacklist->begin(), trk_blacklist->end(), double(x_dut)) != trk_blacklist->end() ) continue;
@@ -955,7 +982,10 @@ int main(int argc, char** argv)
 
 	  if ((energy[myChList[chId]] > MIP_peak[chId]*0.8) && (energy[myChList[chId]] < MIP_peak[chId]*5 ) && (myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) )  // restrict to the intercept must be in the bar of interest
 	    {                
-	      hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
+	      if ((energy[myChList[chId]] < MIP_peak[chId]*2) ) hXT_cut[step1][step2][myChList[chId]]->Fill(in_me);
+	      if ((myChPos[myChList[chId]]-1.5 < xIntercept) && (xIntercept < myChPos[myChList[chId]]+1.5) ) hXT_cutPos[step1][step2][myChList[chId]]->Fill(in_me);  // restrict to the intercept must be in the bar of interest  
+	      if ((energy[myChList[chId]] > MIP_peak[chId]*2) ) hXT_cutMIP2x[step1][step2][myChList[chId]]->Fill(in_me);
+              if ((energy[myChList[chId]] > MIP_peak[chId]*3) ) hXT_cutMIP3x[step1][step2][myChList[chId]]->Fill(in_me);
 	      //	      if (in_me < 0.6) std::cout << "fraction of light in central: " << in_me << " fraction in l,r: " << in_my_ln << ", " << in_my_rn << std::endl;
 	      //	      if (in_me < 0.6) std::cout << "energy in central: " << energy[myChList[chId]] << " energy in l,r: " << energy[myChList[chId-1]] << ", " << energy[myChList[chId+1]] << std::endl;
 	      hXT_cut_ln[step1][step2][myChList[chId]]->Fill(in_my_ln);
@@ -986,9 +1016,18 @@ int main(int argc, char** argv)
   double XT_err_rn[NBARS*2] = {0};
   
   double XT_norm[NBARS*2] = {0};
-  double avgXT = 0;        
+  double minXT = 100;
+  double maxXT = 0;
+  double minXT_top = 100;
+  double maxXT_top = 0;
+  double minXT_bot = 100;
+  double maxXT_bot = 0;
+  double avgXT = 0;   
+  double avgXT_err = 0;     
   double avgXT_top = 0;
+  double avgXT_top_err = 0;
   double avgXT_bot = 0;
+  double avgXT_bot_err = 0;
   double avgXT_ln = 0;
   double avgXT_rn = 0;
   int XT_count = 0;
@@ -1016,7 +1055,7 @@ int main(int argc, char** argv)
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(kGreen+2);
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetMarkerColor(kGreen+2);
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
-      
+
       hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetLineColor(kRed+1);
       hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->SetMarkerColor(kRed+1);
       hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Draw("same");
@@ -1030,7 +1069,7 @@ int main(int argc, char** argv)
       float maxBin    = hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetMaximumBin();
       float maxCenter = hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinCenter(maxBin);        
       TF1 * fitGaus = new TF1 ("fitGaus","gaus", 0.93*maxCenter, 1);
-      fitGaus->SetLineColor(kGreen+1);
+      fitGaus->SetLineColor(kGreen+2);
       hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitGaus, "QRL");
       XT[chId] = fitGaus->GetParameter(1);        
       XT_err[chId] = fitGaus->GetParError(1);
@@ -1039,7 +1078,7 @@ int main(int argc, char** argv)
       maxBin    = hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetMaximumBin();
       maxCenter = hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinCenter(maxBin);
       fitGaus = new TF1 ("fitGaus","gaus", 0.7*maxCenter, 1.5*maxCenter);
-      fitGaus->SetLineColor(kRed+2);
+      fitGaus->SetLineColor(kRed+1);
       hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitGaus, "QRL");
       XT_ln[chId] = fitGaus->GetParameter(1);        
       XT_err_ln[chId] = fitGaus->GetParError(1);
@@ -1048,33 +1087,42 @@ int main(int argc, char** argv)
       maxBin    = hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetMaximumBin();
       maxCenter = hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->GetBinCenter(maxBin);
       fitGaus = new TF1 ("fitGaus","gaus", 0.7*maxCenter, 1.5*maxCenter);
-      fitGaus->SetLineColor(kYellow+1);
+      fitGaus->SetLineColor(kYellow+2);
       hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChList[chId]]->Fit(fitGaus, "QRL");
       XT_rn[chId] = fitGaus->GetParameter(1);        
       XT_err_rn[chId] = fitGaus->GetParError(1);
       
       //counting good fits
-      if (XT[chId]>0.1) 
+      if (XT[chId]>0.4 && XT[chId]<1.1) 
         {
+	  if (XT[chId] > maxXT) maxXT = XT[chId];
+	  if (XT[chId] < minXT) minXT = XT[chId];
 	  avgXT += XT[chId];
+	  avgXT_err += XT_err[chId];
 	  XT_count++;       
 	  if (chId<NBARS)
 	    {
+	      if (XT[chId] > maxXT_top) maxXT_top = XT[chId];
+	      if (XT[chId] < minXT_top) minXT_top = XT[chId];
 	      avgXT_top += XT[chId];
+	      avgXT_top_err += XT_err[chId];
 	      XT_count_top++;
 	    }
 	  else
 	    {
+	      if (XT[chId] > maxXT_bot) maxXT_bot = XT[chId];
+	      if (XT[chId] < minXT_bot) minXT_bot = XT[chId];
 	      avgXT_bot += XT[chId];
+	      avgXT_bot_err += XT_err[chId];
 	      XT_count_bot++;
 	    }    
         }
-      if (XT_ln[chId]>0)
+      if (XT_ln[chId]>0 && XT_ln[chId]<1.1)
         {
           avgXT_ln += XT_ln[chId];
           XT_count_ln++;
         }
-      if (XT_rn[chId]>0)
+      if (XT_rn[chId]>0 && XT_rn[chId]<1.1)
         {
           avgXT_rn += XT_rn[chId];
           XT_count_rn++;
@@ -1088,34 +1136,83 @@ int main(int argc, char** argv)
   cXTZoom->Divide(1, 2);
   cXTZoom->cd(1);
   //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  hXT_cutPos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->SetLineColor(kBlue);
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  //  hXT_cutPos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
   gPad->SetLogy();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
   leg = new TLegend(0.3,0.7,0.6,0.9);
   leg->AddEntry(hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar");
+  //  leg->AddEntry(hXT_cutPos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar, w/position cut");
   leg->AddEntry(hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in right bar");
   leg->AddEntry(hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in left bar");
   leg->Draw();
   cXTZoom->cd(2);
   //  hXT[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  hXT_cutPos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->SetLineColor(kBlue);
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  //  hXT_cutPos[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
   gPad->SetLogy();
   hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
   gStyle->SetOptStat(0);
-  cXTZoom->SaveAs(Form("Cross Talk, Center Bar, Log.pdf"));
+  cXTZoom->SaveAs(Form("Cross Talk, Center Bar, Log, Pos Cut.pdf"));
   
+  TCanvas * cXTZoomMIP = new TCanvas ("cXTZoomMIP", "cXTZoomMIP", 500, 800);
+  cXTZoomMIP->Divide(1, 2);
+  cXTZoomMIP->cd(1);
+  hXT_cutMIP2x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->SetLineColor(kBlue);
+  hXT_cutMIP3x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->SetLineColor(kMagenta);
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw();
+  hXT_cutMIP2x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
+  //  hXT_cutMIP3x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
+  hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
+  hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->Draw("same");
+  gPad->SetLogy();
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
+  leg = new TLegend(0.3,0.7,0.6,0.9);
+  leg->AddEntry(hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar");
+  leg->AddEntry(hXT_cutMIP2x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar, w/2x MIP cut");
+  //  leg->AddEntry(hXT_cutMIP3x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in central bar, w/3x MIP cut");
+  leg->AddEntry(hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in right bar");
+  leg->AddEntry(hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChTop[selBarNumber]],"MIP in left bar");
+  leg->Draw();
+  cXTZoomMIP->cd(2);
+  hXT_cutMIP2x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->SetLineColor(kBlue);
+  hXT_cutMIP3x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->SetLineColor(kMagenta);
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw();
+  hXT_cutMIP2x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
+  //  hXT_cutMIP3x[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
+  hXT_cut_ln[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
+  hXT_cut_rn[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->Draw("same");
+  gPad->SetLogy();
+  hXT_cut[step1_vct.at(selStep1)][step2_vct.at(selStep2)][myChBot[selBarNumber]]->GetYaxis()->SetRangeUser(1,1000.);
+  gStyle->SetOptStat(0);
+  cXTZoomMIP->SaveAs(Form("Cross Talk, Center Bar, Log, with MIP reqs.pdf"));
+
   avgXT /= XT_count; 
+  avgXT_err /= XT_count;
   avgXT_top /= XT_count_top;
+  avgXT_top_err /= XT_count_top;
   avgXT_bot /= XT_count_bot;
+  avgXT_bot_err /= XT_count_bot;
   avgXT_ln /= XT_count_ln;
   avgXT_rn /= XT_count_rn;
+  std::cout << "Min cross talk = " << minXT << std::endl;
+  std::cout << "Max cross talk = " << maxXT << std::endl;
   std::cout << "Average cross talk = " << avgXT << std::endl;
+  std::cout << "Average cross talk error = " << avgXT_err << std::endl;
+  std::cout << "Min cross talk top = " << minXT_top << std::endl;
+  std::cout << "Max cross talk top = " << maxXT_top << std::endl;
   std::cout << "Average cross talk top = " << avgXT_top << std::endl;
+  std::cout << "Average cross talk top error = " << avgXT_top_err << std::endl;
+  std::cout << "Min cross talk bot = " << minXT_bot << std::endl;
+  std::cout << "Max cross talk bot = " << maxXT_bot << std::endl;
   std::cout << "Average cross talk bot = " << avgXT_bot << std::endl;
+  std::cout << "Average cross talk bot error = " << avgXT_bot_err << std::endl;
   std::cout << "Average cross talk, left neighbor = " << avgXT_ln << std::endl;
   std::cout << "Average cross talk, right neighbor = " << avgXT_rn << std::endl;
 
@@ -1197,6 +1294,7 @@ int main(int argc, char** argv)
   cXT_abs_nb->cd();
   gXT_top_ln->Draw("APE");
   gXT_top_ln->GetYaxis()->SetRangeUser(0., 0.2);
+  gXT_top_ln->GetXaxis()->SetRangeUser(0., 16.);
   gXT_top_ln->GetYaxis()->SetTitle("Fraction of light inside each neighboring bar");    
   gXT_top_ln->GetXaxis()->SetTitle("Bar Number");
   gXT_top_ln->SetMarkerStyle(20);
@@ -1374,6 +1472,25 @@ int main(int argc, char** argv)
   gPad->SetGridx(); 
   cCTR_norm_RMS->SaveAs("cCTR_norm_RMS.pdf");
   
+  /*
+  TCanvas * cBarSpacing = new TCanvas ("cBarSpacing", "cBarSpacing", 1000, 500);
+  cBarSpacing->Divide(2);
+  cBarSpacing->cd(1);
+  BarSpacingTop->Draw();
+  BarSpacingTop->GetXaxis()->SetTitle("Bar Spacing");
+  BarSpacingTop->SetLineColor(kGreen+1);
+  BarSpacingTop->SetFillColor(kGreen+1);
+  BarSpacingTop->SetFillStyle(3001);
+  cBarSpacing->cd(2);
+  BarSpacingBot->Draw();
+  BarSpacingBot->GetXaxis()->SetTitle("Bar Spacing");
+  BarSpacingBot->SetLineColor(kBlue+1);
+  BarSpacingBot->SetFillColor(kBlue+1);
+  BarSpacingBot->SetFillStyle(3001);
+  gPad->SetGridx();
+  cBarSpacing->SaveAs("BarSpacing.pdf");
+  */
+
   //     //save plots or histos/graphs to output file
   //     TFile * outputFile = new TFile(Form("./output/output_run_%.3d.root", firstRun), "RECREATE");
   //     outputFile->cd();    

@@ -166,7 +166,7 @@ int main(int argc, char** argv)
     double maxEnergy = 50;
     double minTime = -200000;
     double maxTime = 200000;
-    double minXpos = 0;
+    double minXpos = -10;
     double maxXpos = 40;
     double minYpos = -10;
     double maxYpos = 50;
@@ -315,9 +315,9 @@ int main(int argc, char** argv)
 	     pTot_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile (Form("pTot_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("ToT vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 4000, minYpos, maxYpos );
 	     pEff_vs_Xpos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Xpos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. X pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxXpos);
 	     pEff_vs_Ypos[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pEff_vs_Ypos_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("Efficiency vs. Y pos, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, maxYpos);
-	     pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );
-	     
+	     pXpos_Ypos_Tot[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH2F (Form("pXpos_Ypos_Tot_ch%.3d_step1vct_%.1f_step2vct_%.1f_step1_%i_step2_%i", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2), iStep1, iStep2), Form("X and Y pos vs. ToT, ch%.3d, step1_%.1f, step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 40, minXpos, maxXpos, 40, minYpos, maxYpos );	     
 	     pXY_Edep[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TProfile2D (Form("pXY_Edep_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("XY Energy dep ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, minXpos, maxXpos, 400, minXpos, maxXpos );
+
 	     pCrossTalk[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalk_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
 	     pCrossTalkBar[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
 	     pCrossTalkBar1away[step1_vct.at(iStep1)][step2_vct.at(iStep2)][iCh] = new TH1F (Form("pCrossTalkBar1away_ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), Form("Cross Talk 1 away (with bar cut) ch%.3d_step1_%.1f_step2_%.1f", iCh, step1_vct.at(iStep1), step2_vct.at(iStep2)), 400, 0, 1);
@@ -366,7 +366,7 @@ int main(int argc, char** argv)
 	 // if not one of channels that we care about, skip it
 	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
 	 // want to find the total energy in the event, in any channel
-	 if ( (tot[iCh] < -100) || (energy[iCh] < -100) || (qfine[iCh] <= 13)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot 
+	 if ( (qfine[iCh] <= 14) || (qfine[iCh] > 500) || (energy[iCh] == 0) || (energy[iCh] == 20) || (energy[iCh] == 40) || (energy[iCh] >= 60)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot. Excluse high and low qfine regions, and energy values where there is a spike (multiplies of 20)
 	 corrected_tot[iCh] = 14.13 * (exp(0.01562 * (tot[iCh]/1.e3))-1); // corrected energy given the correction to the tot linearization         
 
 	 // define total energy separately for the top and bottom half of the bars. TotalEnergy[0] = even, TotalEnergy[1] = odd channels
@@ -383,7 +383,7 @@ int main(int argc, char** argv)
      for (int iCh = 0; iCh<NCH; iCh++) // channel loop in the event loop
        {
 	 if (std::find(std::begin(myChList), std::end(myChList), iCh) == std::end(myChList) ) continue;
-	 if ( (tot[iCh] < -100) || (energy[iCh] < -100) || (qfine[iCh] <= 13)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot
+         if ( (qfine[iCh] <= 14) || (qfine[iCh] > 500) || (energy[iCh] == 0) || (energy[iCh] == 20) || (energy[iCh] == 40) || (energy[iCh] >= 60)) continue; // skip any thing where the energy isnt a normal value (should always be postive, default value is -9999) for both energy and tot. Excluse high and low qfine regions, and energy values where there is a spike (multiplies of 20) 
 	 //if (iCh%2 == 1 ) continue;
 	 //if (step1 != 6) continue;
 	 //if (step2 != 0) continue;

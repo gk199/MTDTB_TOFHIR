@@ -61,9 +61,11 @@ int main() {
   leg->Draw();
   gPad->SetGridy();
   cMIP_peak->SaveAs(Form("MIP_Peak_Values_vs_OV.pdf"));
+  cMIP_peak->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/MIP_Peak_Values_vs_OV.pdf"));
+
   // fitting function, linear
-  TF1 * linear_pin = new TF1("linear_pin","pol1");
-  TF1 * linear_flex = new TF1("linear_flex","pol1");
+  TF1 * linear_pin = new TF1("linear_pin","[0]*(x-[1])", 0,9);//"pol1");
+  TF1 * linear_flex = new TF1("linear_flex","[0]*(x-[1])", 0,9);//,"pol1");
   MIPpin_vs_OV->Fit(linear_pin);
   MIPflex_vs_OV->Fit(linear_flex);
   linear_pin->Draw("same");
@@ -71,6 +73,7 @@ int main() {
   std::cout << linear_pin->GetParameter(0) << " = offset for pin, and " << linear_flex->GetParameter(0) << " = offset for flex " << std::endl;
   std::cout << linear_pin->GetParameter(1) << " = slope for pin, and "<< linear_flex->GetParameter(1) << " = slope for flex " << std::endl;
   cMIP_peak->SaveAs(Form("LinearFit_MIP_Peak_Values_vs_OV.pdf"));
+  cMIP_peak->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/LinearFit_MIP_Peak_Values_vs_OV.pdf"));
   MIPpin_vs_OV->Fit(myFit_pin,"","",0,5);
   MIPflex_vs_OV->Fit(myFit_flex,"","",0,5);
   myFit_pin->Draw("same");
@@ -78,10 +81,11 @@ int main() {
   std::cout << myFit_pin->GetParameter(0) << " = offset for pin, and " << myFit_flex->GetParameter(0) << " = offset for flex, fancy fit" << std::endl;
   std::cout << myFit_pin->GetParameter(1) << " = slope for pin, and "<< myFit_flex->GetParameter(1) << " = slope for flex, fancy fit" << std::endl;
   cMIP_peak->SaveAs(Form("FancyFit_MIP_Peak_Values_vs_OV.pdf"));
+  cMIP_peak->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/FancyFit_MIP_Peak_Values_vs_OV.pdf"));
 
   TCanvas * cIC_RMS = new TCanvas ("cIC_RMS", "cIC_RMS", 600, 500);
   cIC_RMS->cd();
-  RMSpin_vs_OV->Draw("APE");
+  RMSpin_vs_OV->Draw("LAPE");
   RMSpin_vs_OV->GetYaxis()->SetRangeUser(0, 0.23);
   RMSpin_vs_OV->GetXaxis()->SetLimits(0,9);
   RMSpin_vs_OV->SetTitle("RMS of Intercalibration Coefficient vs. OV");
@@ -93,20 +97,21 @@ int main() {
   RMSflex_vs_OV->SetMarkerStyle(21);
   RMSflex_vs_OV->SetMarkerColor(kRed+1);
   RMSflex_vs_OV->SetLineColor(kRed+1);
-  RMSflex_vs_OV->Draw("same PE");
+  RMSflex_vs_OV->Draw("same LPE");
   leg = new TLegend(0.15,0.75,0.5,0.88,NULL,"brNDC");
   leg->AddEntry(RMSpin_vs_OV, "Pin connected array", "lp" );
   leg->AddEntry(RMSflex_vs_OV, "Flex connected array", "lp" );
   leg->Draw();
   gPad->SetGridy();
   cIC_RMS->SaveAs(Form("RMS_of_IC_Values_vs_OV.pdf"));
+  cIC_RMS->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/RMS_of_IC_Values_vs_OV.pdf"));
 
   TCanvas * cIC_RMS_sub8 = new TCanvas ("cIC_RMS_sub8", "cIC_RMS_sub8", 600, 500);
   cIC_RMS_sub8->cd();
-  RMSpin_sub8_vs_OV->Draw("APE");
+  RMSpin_sub8_vs_OV->Draw("LAPE");
   RMSpin_sub8_vs_OV->GetYaxis()->SetRangeUser(0, 0.23);
   RMSpin_sub8_vs_OV->GetXaxis()->SetLimits(0,9);
-  RMSpin_sub8_vs_OV->SetTitle("#sqrt{RMS_{OV} - RMS_{8}} of Intercalibration Coefficient vs. OV");
+  RMSpin_sub8_vs_OV->SetTitle("#sqrt{RMS^{2}_{OV} - RMS^{2}_{8}} of Intercalibration Coefficient vs. OV");
   RMSpin_sub8_vs_OV->GetYaxis()->SetTitle("#sqrt{RMS_{OV} - RMS_{8}} of IC Values [a.u.]");
   RMSpin_sub8_vs_OV->GetXaxis()->SetTitle("Overvoltage (V)");
   RMSpin_sub8_vs_OV->SetMarkerStyle(20);
@@ -115,13 +120,49 @@ int main() {
   RMSflex_sub8_vs_OV->SetMarkerStyle(21);
   RMSflex_sub8_vs_OV->SetMarkerColor(kRed+1);
   RMSflex_sub8_vs_OV->SetLineColor(kRed+1);
-  RMSflex_sub8_vs_OV->Draw("same PE");
+  RMSflex_sub8_vs_OV->Draw("same LPE");
   leg = new TLegend(0.15,0.75,0.5,0.88,NULL,"brNDC");
   leg->AddEntry(RMSpin_sub8_vs_OV, "Pin connected array", "lp" );
   leg->AddEntry(RMSflex_sub8_vs_OV, "Flex connected array", "lp" );
   leg->Draw();
   gPad->SetGridy();
   cIC_RMS_sub8->SaveAs(Form("RMS_sub8_of_IC_Values_vs_OV.pdf"));
+  cIC_RMS_sub8->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/RMS_sub8_of_IC_Values_vs_OV.pdf"));
+
+  TCanvas * cIC_RMS_overlay = new TCanvas ("cIC_RMS_overlay", "cIC_RMS_overlay", 600, 500);
+  cIC_RMS_overlay->cd();
+  RMSpin_vs_OV->Draw("LAPE");
+  RMSpin_vs_OV->GetYaxis()->SetRangeUser(0, 0.23);
+  RMSpin_vs_OV->GetXaxis()->SetLimits(0,9);
+  RMSpin_vs_OV->SetTitle("RMS and #sqrt{RMS^{2}_{OV} - RMS^{2}_{8}} of Intercalibration Coefficient vs. OV");
+  RMSpin_vs_OV->GetYaxis()->SetTitle("RMS of IC Values [a.u.]");
+  RMSpin_vs_OV->GetXaxis()->SetTitle("Overvoltage (V)");
+  RMSpin_vs_OV->SetMarkerStyle(20);
+  RMSpin_vs_OV->SetMarkerColor(kBlue+1);
+  RMSpin_vs_OV->SetLineColor(kBlue+1);
+  RMSflex_vs_OV->SetMarkerStyle(21);
+  RMSflex_vs_OV->SetMarkerColor(kRed+1);
+  RMSflex_vs_OV->SetLineColor(kRed+1);
+  RMSflex_vs_OV->Draw("same LPE");
+  RMSpin_sub8_vs_OV->SetMarkerStyle(20);
+  RMSpin_sub8_vs_OV->SetMarkerColor(kBlue+1);
+  RMSpin_sub8_vs_OV->SetLineColor(kBlue+1);
+  RMSpin_sub8_vs_OV->SetLineStyle(2);
+  RMSpin_sub8_vs_OV->Draw("same LPE");
+  RMSflex_sub8_vs_OV->SetMarkerStyle(21);
+  RMSflex_sub8_vs_OV->SetMarkerColor(kRed+1);
+  RMSflex_sub8_vs_OV->SetLineColor(kRed+1);
+  RMSflex_sub8_vs_OV->SetLineStyle(2);
+  RMSflex_sub8_vs_OV->Draw("same LPE");
+  leg = new TLegend(0.15,0.71,0.5,0.89,NULL,"brNDC");
+  leg->AddEntry(RMSpin_vs_OV, "Pin connected array, RMS_{OV}", "lp" );
+  leg->AddEntry(RMSflex_vs_OV, "Flex connected array, RMS_{OV}", "lp" );
+  leg->AddEntry(RMSpin_sub8_vs_OV, "Pin connected array,  #sqrt{RMS^{2}_{OV} - RMS^{2}_{8}}", "lp" );
+  leg->AddEntry(RMSflex_sub8_vs_OV, "Flex connected array,  #sqrt{RMS^{2}_{OV} - RMS^{2}_{8}}", "lp" );
+  leg->Draw();
+  gPad->SetGridy();
+  cIC_RMS_overlay->SaveAs(Form("RMS_of_IC_Values_vs_OV_overlay.pdf"));
+  cIC_RMS_overlay->SaveAs(Form("/eos/user/g/gkopp/www/BTL_TB/RMS_of_IC_Values_vs_OV_overlay.pdf"));
 
   return 0;
 }

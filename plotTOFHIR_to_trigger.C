@@ -95,8 +95,8 @@ int main(int argc, char** argv)
 
     // extract information from the ROOT tree
     tree->SetBranchStatus("*",0);
-    tree->SetBranchAddress("step1", &step1);
-    tree->SetBranchAddress("step2", &step2);    
+    tree->SetBranchAddress("step1", &step1); // overvoltage
+    tree->SetBranchAddress("step2", &step2); // vth 1
     tree->SetBranchAddress("x_dut", &x_dut);
     tree->SetBranchAddress("y_dut", &y_dut);
     tree->SetBranchAddress("ntracks", &ntracks);    
@@ -158,8 +158,8 @@ int main(int argc, char** argv)
     #define NCH 400
 
     // these are from the board mapping on the google sheet tab 
-    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // this is for the first array
-    //int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142}; // this is for the second array
+    //    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142, 129, 131, 133, 135, 137, 139, 141, 143}; // this is for the first array
+    int myChList[] = {128, 130, 132, 134, 136, 138, 140, 142}; // this is for the second array
     int NBARS = 8;
     double center[NCH];
     double MIP[NCH];

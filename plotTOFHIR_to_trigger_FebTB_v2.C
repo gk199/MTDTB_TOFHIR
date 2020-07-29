@@ -228,7 +228,7 @@ int main(int argc, char** argv)
   
 
   // mapping for the pin connector array, caltech array
-  
+  /* 
   std::cout << "CALTECH PIN CONNECTED ARRAY" << std::endl;
   int myChList[32] = {38,52,9,51,62,54,58,53,61,56,59,55,50,60,57,63,
 		      43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40};
@@ -238,7 +238,7 @@ int main(int argc, char** argv)
   int myChBot[16] = {43,34,42,33,44,36,46,35,45,37,47,39,48,41,49,40}; // {40,49,41,48,39,47,37,45,35,46,36,44,33,42,34,43}; // one side from channelMapping2, totalEnergy[1]
   uint MIP_peak_low = 10; //2 for OV = 2, 4 for OV=3, 6 for OV = 4, 10 for OV = 6, 14 for OV = 8
   int selBarNumber = 7;
-  /*
+  */
     std::cout << "MILANO FLEX CONNECTED ARRAY" <<std::endl;
   // mapping for milano array, flex cable connected
   int myChList[32] = {3,10,0,1,7,14,5,12,21,20,23,22,16,18,17,19,
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
   int myChTop[16] = {4,6,15,8,13,2,11,27,32,31,30,29,28,26,24,25}; // {25,24,26,28,29,30,31,32,27,11,2,13,8,15,6,4};
   uint MIP_peak_low = 8; // 8 for OV 6, 11 for OV 8, 5 for OV 4, 3 for OV 3, 1 for OV 2; 
   int selBarNumber = 9;
-  */
+ 
   //  for (int iCh = 0;iCh < 50; iCh++) std::cout << myChPos[iCh] << std::endl;
 
   bool HORIZONTAL = true;
@@ -1218,6 +1218,8 @@ int main(int argc, char** argv)
 
   TGraphErrors * gXT_top = new TGraphErrors();
   TGraphErrors * gXT_bot = new TGraphErrors();
+  TGraphErrors * gXT_thickness_top = new TGraphErrors(); 
+  TGraphErrors * gXT_thickness_bot = new TGraphErrors();
   TGraphErrors * gXT_top_ln = new TGraphErrors();
   TGraphErrors * gXT_bot_ln = new TGraphErrors();
   TGraphErrors * gXT_top_rn = new TGraphErrors();
@@ -1227,17 +1229,20 @@ int main(int argc, char** argv)
 
   for (int chId = 0; chId<NBARS*2; chId++) 
     {
+      if ( (chId == 0) || (chId == 15) || (chId == 1) || ((chId-NBARS) == 0) || ((chId-NBARS) == 1) || ((chId-NBARS) == 15) ) continue; // skip bar 0 and 15 since they dont have neighbor, can't fully define XT values
       XT_norm[chId] = XT[chId] / avgXT;
       if (chId<NBARS) 
         {
 	  gXT_top->SetPoint(chId, chId, XT[chId]);
 	  gXT_top->SetPointError(chId, 0, XT_err[chId]);
-	  if(XT_ln[chId]>0 && XT_err_ln[chId] < 0.2)
+          gXT_thickness_top->SetPoint(chId, (1.005-0.963)/15*(chId) + 0.963, XT[chId]); // resin measurements for the milano (flex) array
+          gXT_thickness_top->SetPointError(chId, 0, XT_err[chId]);
+	  if(XT_ln[chId]>0 && XT_err_ln[chId] < 0.2)// && chId > 2)
             {
 	      gXT_top_ln->SetPoint(chId, chId, XT_ln[chId]);
 	      gXT_top_ln->SetPointError(chId, 0, XT_err_ln[chId]);
             }
-	  if(XT_rn[chId]>0 && XT_err_rn[chId] < 0.2)
+	  if(XT_rn[chId]>0 && XT_err_rn[chId] < 0.2)// && chId > 2)
             {
 	      gXT_top_rn->SetPoint(chId, chId, XT_rn[chId]);
 	      gXT_top_rn->SetPointError(chId, 0, XT_err_rn[chId]);
@@ -1250,12 +1255,14 @@ int main(int argc, char** argv)
         {
 	  gXT_bot->SetPoint(chId-NBARS, chId-NBARS, XT[chId]);
 	  gXT_bot->SetPointError(chId-NBARS, 0, XT_err[chId]);
-	  if(XT_ln[chId]>0 && XT_err_ln[chId] < 0.2)
+	  gXT_thickness_bot->SetPoint(chId-NBARS, (1.405-0.332)/15*(chId-NBARS) + 0.332, XT[chId]); // resin measurements for the milano (flex) array 
+	  gXT_thickness_bot->SetPointError(chId-NBARS, 0, XT_err[chId]);
+	  if(XT_ln[chId]>0 && XT_err_ln[chId] < 0.2)// && (chId-NBARS) > 2)
             {
 	      gXT_bot_ln->SetPoint(chId-NBARS, chId-NBARS, XT_ln[chId]);
 	      gXT_bot_ln->SetPointError(chId-NBARS, 0, XT_err_ln[chId]);
             }
-	  if(XT_rn[chId]>0 && XT_err_rn[chId] < 0.2)
+	  if(XT_rn[chId]>0 && XT_err_rn[chId] < 0.2)// && chId-NBARS > 2)
             {
                 gXT_bot_rn->SetPoint(chId-NBARS, chId-NBARS, XT_rn[chId]);
                 gXT_bot_rn->SetPointError(chId-NBARS, 0, XT_err_rn[chId]);
@@ -1272,6 +1279,9 @@ int main(int argc, char** argv)
   cXT_abs->cd();
   gXT_top->Draw("APE");
   gXT_top->GetYaxis()->SetRangeUser(0.5, 1.);
+  gXT_top->GetXaxis()->SetRangeUser(0., 16.);
+  cXT_abs->Update();
+  gXT_top->Draw("APE");
   gXT_top->GetYaxis()->SetTitle("Fraction of light within bar (XT)");
   gXT_top->GetXaxis()->SetTitle("Bar Number");
   gXT_top->SetMarkerStyle(20);
@@ -1290,6 +1300,28 @@ int main(int argc, char** argv)
   gPad->SetGridy();
   cXT_abs->SaveAs("XT Fraction of Light in bar.pdf");
   
+  TCanvas * cXT_thickness_abs = new TCanvas ("cXT_thickness_abs", "cXT_thickness_abs", 600, 500);
+  cXT_thickness_abs->cd();
+  gXT_thickness_bot->Draw("APE");
+  gXT_thickness_bot->GetYaxis()->SetRangeUser(0.5, 1.);
+  gXT_thickness_bot->GetYaxis()->SetTitle("Fraction of light within bar (XT)");
+  gXT_thickness_bot->GetXaxis()->SetTitle("Estimated Resin Thickness");
+  gXT_thickness_bot->SetMarkerStyle(21);
+  gXT_thickness_bot->SetMarkerColor(kRed+1);
+  gXT_thickness_bot->SetLineColor(kRed+1);
+
+  gXT_thickness_top->SetMarkerStyle(20);
+  gXT_thickness_top->SetMarkerColor(kBlue+1);
+  gXT_thickness_top->SetLineColor(kBlue+1);
+  gXT_thickness_top->Draw("same PE");
+
+  leg = new TLegend(0.15,0.75,0.5,0.88,NULL,"brNDC");
+  leg->AddEntry(gXT_thickness_top, "top SiPMs", "lp" );
+  leg->AddEntry(gXT_thickness_bot, "bottom SiPMs", "lp" );
+  leg->Draw();
+  gPad->SetGridy();
+  cXT_thickness_abs->SaveAs("XT Fraction of Light in bar vs resin thickness.pdf");
+
   TCanvas * cXT_abs_nb = new TCanvas ("cXT_abs_nb", "cXT_abs_nb", 600, 500);
   cXT_abs_nb->cd();
   gXT_top_ln->Draw("APE");
